@@ -14,16 +14,23 @@ schemas and the learner metadata vocabulary. Do not edit these files: change a s
 | `question-bank/pyq-question.D2.template.json` | a previous-year exam question at D2 | an exam-bank file |
 | `question-bank/pyq-question.D3.template.json` | a previous-year exam question at D3 | an exam-bank file |
 | `question-bank/pyq-question.D4.template.json` | a previous-year exam question at D4 | an exam-bank file |
+| `question-bank/transfer-question.D1..D4.template.json` | a Core2B transfer task (the changed decision is protected) | the package `questions[]` and `selection.core2b` |
+| `core1a/representation.template.json`, `.svg` | the picture a Core1A unit stages | the package `representations[]` and `<Subject>/assets/representations/` |
 | `approvals/owner-approval.template.json` | the Owner's decision on a rung ladder or the atlas | `approvals/` beside what it approves |
 
 An owner-supplied question is not authored from a template: `owner_bank.py new` keeps the Owner's words verbatim.
 
 ## The loop an agent follows
 
-1. Copy the template for the record and band. Choose the band from the score (vocabulary ranges), never the other way round.
-2. Fill it. The `$template.components` list says, per component, which fields it reads, how many items the band needs, and how to write them.
-3. `python3 Shared/tools/authoring_templates.py check FILE` until it prints nothing: no placeholder, schema-valid, blueprint depth met, no claim an author cannot make.
-4. Delete `$template` and add the record to its file. `render_core.py gaps` then shows what the product still needs.
+1. Find the work: `packet atlas --subject S` (scope, bands, missing D1-D4) and `packet rungs --matrix FILE` (the ladder).
+2. Start from a template made for the package: `new question --package P --band D4 [--role CORE2B]` or
+   `new core1a --package P --microtopic MIC-...`. Choose the band from the score (vocabulary ranges), never the other way round.
+3. Fill it. `$template.components` says, per component, which fields it reads, how many items the band needs and how to write them;
+   `$template.rules` says what the page and the gates expect (no option letters, one complete picture per stage, crux only from the bank).
+4. Delete `$template`, then `check FILE --into <package> --product <manifest> [--with representations.json]` until it prints `ok`.
+   This runs the library intake, the depiction checks and the renderer on the record in place and reports only what the record adds;
+   it also lists what it closes and any waiver, which a reviewer must accept.
+5. Add the record to its package and its id to the product manifest; render the product and look at the page on a tablet width.
 
 ## Approvals
 

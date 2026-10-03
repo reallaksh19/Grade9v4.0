@@ -18,4 +18,6 @@ The [techniques](../../golden/TECHNIQUES.md) and [anti-pattern cards](../../gold
 
 Reusable templates: [UNIT](templates/UNIT.md), [DESIGN-NOTE](templates/DESIGN-NOTE.md), [SELF-CRITIQUE](templates/SELF-CRITIQUE.md), [WORKLOG](templates/WORKLOG.md), [OWNER-NOTES](templates/OWNER-NOTES.md). `DESIGN-NOTE.md` owns difficulty-first authoring rationale and interaction purpose; `WORKLOG.md` owns current lot/slice execution state and full-denominator coverage state. Do not create a parallel difficulty/lot datastore unless a real shared machine consumer proves the need. Superseded parallel instructions remain in [archive/](archive/) for historical reconstruction.
 
+Record templates (generated from the blueprint and the schemas): [template/v4/README.md](../../template/v4/README.md). They are for the records a renderer reads (Core1A units, questions D1-D4, transfer tasks, figures); the templates above are for planning and notes.
+
 Starting a new job, choosing the first Core, naming a subtopic and the two meanings of "rung": [REQUESTS.md](REQUESTS.md).

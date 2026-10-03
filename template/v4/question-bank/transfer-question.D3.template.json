@@ -1,6 +1,6 @@
 {
   "$template": {
-    "kind": "LIBRARY_QUESTION",
+    "kind": "TRANSFER_QUESTION",
     "band": "D3",
     "band_label": "Multi-step reasoning",
     "score_range": [
@@ -8,7 +8,7 @@
       7
     ],
     "blueprint": "BP-CORE2-SOURCE-QUESTION@1.5.0",
-    "destination": "questions[] of the subject package <Subject>/library/<slug>.v1.json, and its id in the product manifest's selection.core2a (or core2b for a transfer task)",
+    "destination": "questions[] of the subject package <Subject>/library/<slug>.v1.json, and its id in the product manifest's selection.core2b",
     "rules": [
       "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
       "status stays CANDIDATE: promotion is a review with a receipt, never an edit.",
@@ -21,6 +21,7 @@
       "extensions.problem_specification and answer_contract let SELF_CONTAINMENT run. Add extensions.computation_model only when the problem fits an implemented model (LINEAR_KINEMATICS, PROJECTILE_MAX_HEIGHT, PROJECTILE_NO_DRAG, PROJECTILE_TIME_OF_FLIGHT); then ANSWER_CORRECTNESS recomputes your answer.",
       "An EXPECTED component you leave empty needs a written reason in extensions['grade9v3:component_waivers'] {COMPONENT_ID: reason}.",
       "Never write HTML: the renderer makes the page from this record.",
+      "Core2B protects the decision the transfer changes: transfer.protected_move_ref names a DECIDE move (MOVE-1 here), and no scaffold may support it, because pre-attempt help would hand it over. representation_roles.safe_ref is shown before the attempt and must not show that move. transfer.novelty names the earlier items you checked this against and why it is new.",
       "Then run: authoring_templates.py check FILE --into <package> --product <manifest>. It runs the library intake and the renderer on the record in place and reports only what the record adds."
     ],
     "components": [
@@ -251,7 +252,13 @@
     ],
     "reason": "<<FILL: adaptation.reason>>"
   },
-  "exposure": [],
+  "exposure": [
+    {
+      "core": "CORE2B",
+      "role": "NEW_TRANSFER",
+      "artifact_ref": null
+    }
+  ],
   "scaffolds": [
     {
       "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
@@ -267,7 +274,7 @@
       "support_kind": "CONNECT",
       "reveals": "CONCEPT",
       "learner_stage": "KEY_CONCEPT",
-      "supports_move_ref": "<<FILL: question id>>-MOVE-1"
+      "supports_move_ref": "<<FILL: question id>>-MOVE-2"
     },
     {
       "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
@@ -295,6 +302,27 @@
     }
   ],
   "learner_question_type": "<<ONE OF: single_correct_mcq | assertion_reason_mcq | integer_answer | matrix_match_mcq | numerical_value | non_negative_integer | multi_correct_mcq | constructed_response | derivation | experimental_design>>",
+  "transfer": {
+    "dimension": "<<ONE OF: model_choice | novelty | reasoning_steps | representation_translation>>",
+    "statement": "<<FILL: transfer.statement>>",
+    "builds_on": [
+      "<<FILL: transfer.builds_on[]>>"
+    ],
+    "protected_move_ref": "<<FILL: question id>>-MOVE-1",
+    "invariant": "<<FILL: transfer.invariant>>",
+    "novelty": {
+      "checked_against": [
+        "<<FILL: transfer.novelty.checked_against[]>>"
+      ],
+      "why_new": "<<FILL: transfer.novelty.why_new>>"
+    }
+  },
+  "representation_roles": {
+    "initial_ref": null,
+    "safe_ref": "<<FILL: REP-... shown before the attempt; it must not show the protected move>>",
+    "bound_ref": null,
+    "stage_refs": []
+  },
   "difficulty": {
     "band": "D3",
     "score": "<<FILL: integer 6 to 7: the sum of the five components below>>",

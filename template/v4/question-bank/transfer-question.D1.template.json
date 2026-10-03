@@ -1,26 +1,27 @@
 {
   "$template": {
-    "kind": "LIBRARY_QUESTION",
-    "band": "D3",
-    "band_label": "Multi-step reasoning",
+    "kind": "TRANSFER_QUESTION",
+    "band": "D1",
+    "band_label": "Direct application",
     "score_range": [
-      6,
-      7
+      0,
+      2
     ],
     "blueprint": "BP-CORE2-SOURCE-QUESTION@1.5.0",
-    "destination": "questions[] of the subject package <Subject>/library/<slug>.v1.json, and its id in the product manifest's selection.core2a (or core2b for a transfer task)",
+    "destination": "questions[] of the subject package <Subject>/library/<slug>.v1.json, and its id in the product manifest's selection.core2b",
     "rules": [
       "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
       "status stays CANDIDATE: promotion is a review with a receipt, never an edit.",
       "answer.verification_status is NOT_RUN or CHECKED_BY_AUTHOR: an author cannot check their own key independently.",
-      "The band is D3: score 6 to 7, the sum of the five components. A different score means a different template.",
-      "scaffolds: 5 rungs for D3, in the order the learner meets them.",
+      "The band is D1: score 0 to 2, the sum of the five components. A different score means a different template.",
+      "scaffolds: 3 rungs for D1, in the order the learner meets them.",
       "adaptation is null unless origin is ADAPTED; then it names the parent and what changed.",
       "options are the choices without letters: the page writes (A), (B), ... itself.",
       "Write math as the existing records do; the page shows it as written (typesetting is a separate duty).",
       "extensions.problem_specification and answer_contract let SELF_CONTAINMENT run. Add extensions.computation_model only when the problem fits an implemented model (LINEAR_KINEMATICS, PROJECTILE_MAX_HEIGHT, PROJECTILE_NO_DRAG, PROJECTILE_TIME_OF_FLIGHT); then ANSWER_CORRECTNESS recomputes your answer.",
       "An EXPECTED component you leave empty needs a written reason in extensions['grade9v3:component_waivers'] {COMPONENT_ID: reason}.",
       "Never write HTML: the renderer makes the page from this record.",
+      "Core2B protects the decision the transfer changes: transfer.protected_move_ref names a DECIDE move (MOVE-1 here), and no scaffold may support it, because pre-attempt help would hand it over. representation_roles.safe_ref is shown before the attempt and must not show that move. transfer.novelty names the earlier items you checked this against and why it is new.",
       "Then run: authoring_templates.py check FILE --into <package> --product <manifest>. It runs the library intake and the renderer on the record in place and reports only what the record adds."
     ],
     "components": [
@@ -101,7 +102,7 @@
           "hints",
           "hint_ladder"
         ],
-        "items_for_band": 5,
+        "items_for_band": 3,
         "floor": 2,
         "hint": "Write scaffolds[], one rung per job, in the order a learner meets them: a D1 or D2 question needs 3 (REPRESENTATION, KEY_CONCEPT, CRUX), a D3 or D4 question 5 (then FORMAL_MODEL, which gives the relation to use, and CHECKPOINT, which gives an intermediate result to compare against). Each has text (the hint), prompt (a question that makes the learner do the step), support_kind (REPRESENT, CONNECT or EXECUTE), reveals (CONCEPT or METHOD; ANSWER is held back until the solution), learner_stage and supports_move_ref (the id of the move it prepares). A rung must teach something specific to this question and must not repeat another rung or state the answer. Delete the rungs the question's band does not need."
       },
@@ -127,7 +128,7 @@
           "answer.reasoning_route",
           "answer.crux_move_ref"
         ],
-        "items_for_band": 4,
+        "items_for_band": 3,
         "floor": 2,
         "hint": "Write answer.reasoning_route[]: 3 moves for a D1 or D2 question, 4 for a D3 or D4. Each move has id, kind (DECIDE, REPRESENT, CONNECT, TRANSFORM or VERIFY), action (what is done), why_valid (the physical or logical reason this step is allowed; not 'this follows from the model'), inputs and output. Set crux_move_ref to the id of the move a learner is most likely to miss. Delete the move the band does not need."
       },
@@ -251,7 +252,13 @@
     ],
     "reason": "<<FILL: adaptation.reason>>"
   },
-  "exposure": [],
+  "exposure": [
+    {
+      "core": "CORE2B",
+      "role": "NEW_TRANSFER",
+      "artifact_ref": null
+    }
+  ],
   "scaffolds": [
     {
       "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
@@ -267,7 +274,7 @@
       "support_kind": "CONNECT",
       "reveals": "CONCEPT",
       "learner_stage": "KEY_CONCEPT",
-      "supports_move_ref": "<<FILL: question id>>-MOVE-1"
+      "supports_move_ref": "<<FILL: question id>>-MOVE-2"
     },
     {
       "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
@@ -276,28 +283,33 @@
       "reveals": "METHOD",
       "learner_stage": "CRUX",
       "supports_move_ref": "<<FILL: question id>>-MOVE-3"
-    },
-    {
-      "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
-      "prompt": "<<FILL: HINT_LADDER scaffolds[].prompt>>",
-      "support_kind": "EXECUTE",
-      "reveals": "METHOD",
-      "learner_stage": "FORMAL_MODEL",
-      "supports_move_ref": "<<FILL: question id>>-MOVE-3"
-    },
-    {
-      "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
-      "prompt": "<<FILL: HINT_LADDER scaffolds[].prompt>>",
-      "support_kind": "EXECUTE",
-      "reveals": "METHOD",
-      "learner_stage": "CHECKPOINT",
-      "supports_move_ref": "<<FILL: question id>>-MOVE-4"
     }
   ],
   "learner_question_type": "<<ONE OF: single_correct_mcq | assertion_reason_mcq | integer_answer | matrix_match_mcq | numerical_value | non_negative_integer | multi_correct_mcq | constructed_response | derivation | experimental_design>>",
+  "transfer": {
+    "dimension": "<<ONE OF: model_choice | novelty | reasoning_steps | representation_translation>>",
+    "statement": "<<FILL: transfer.statement>>",
+    "builds_on": [
+      "<<FILL: transfer.builds_on[]>>"
+    ],
+    "protected_move_ref": "<<FILL: question id>>-MOVE-1",
+    "invariant": "<<FILL: transfer.invariant>>",
+    "novelty": {
+      "checked_against": [
+        "<<FILL: transfer.novelty.checked_against[]>>"
+      ],
+      "why_new": "<<FILL: transfer.novelty.why_new>>"
+    }
+  },
+  "representation_roles": {
+    "initial_ref": null,
+    "safe_ref": "<<FILL: REP-... shown before the attempt; it must not show the protected move>>",
+    "bound_ref": null,
+    "stage_refs": []
+  },
   "difficulty": {
-    "band": "D3",
-    "score": "<<FILL: integer 6 to 7: the sum of the five components below>>",
+    "band": "D1",
+    "score": "<<FILL: integer 0 to 2: the sum of the five components below>>",
     "components": {
       "concept_model_selection": "<<FILL: integer 0 to 2>>",
       "representation_translation": "<<FILL: integer 0 to 2>>",

@@ -40,6 +40,8 @@ PACKAGE_SCHEMA = REPO / "Shared/library/package.schema.json"
 BANK_SCHEMA = REPO / "Shared/library/competitive-exam-bank.schema.json"
 MATRIX_SCHEMA = REPO / "Shared/library/matrix.schema.json"
 VOCABULARY = REPO / "Shared/vocabularies/learner-question-metadata.v1.json"
+ASSURANCE_EXTENSION = REPO / "Shared/assurance/question-assurance-extension.schema.json"
+SCRATCH = REPO / "build/authoring-check"                 # gitignored: where check stages a record next to its package
 OUT = REPO / "template/v4"
 BANDS = ("D1", "D2", "D3", "D4")
 CORE2 = "BP-CORE2-SOURCE-QUESTION"
@@ -176,8 +178,37 @@ def guide(bp: dict, band: str | None) -> list[dict]:
 
 # ---------------------------------------------------------------- the templates
 
+def assurance_extension() -> dict:
+    """The fields that let the assurance checks run on a question instead of reporting it INCONCLUSIVE."""
+    from Shared.assurance import typed
+    schema = load(ASSURANCE_EXTENSION)["properties"]
+    spec = schema["problem_specification"]["properties"]
+    fact = spec["visible_facts"]["items"]["properties"]
+    contract = schema["answer_contract"]["properties"]
+    return {
+        "problem_specification": {
+            "requested_outputs": [{"id": fill("output id, e.g. v"), "quantity_kind": fill("what it is: speed, force, energy, ...")}],
+            "visible_facts": [{k: (one_of(v["enum"]) if "enum" in v else fill(f"visible fact {k}")) for k, v in fact.items()}],
+            "declared_assumptions": [fill("an assumption the stem or the conditions state")],
+            "permitted_constants": [],
+        },
+        "answer_contract": {"answer_type": one_of(contract["answer_type"]["enum"]), "requested_outputs": [fill("output id")],
+                            "equivalence_policy": one_of(contract["equivalence_policy"]["enum"])},
+        "$computation_model_types": sorted(typed.MODELS),
+    }
+
+
+def transfer_block(defs: dict) -> dict:
+    node = defs["question"]["properties"]["transfer"]
+    block = instance(node, defs, "transfer", include=("dimension", "statement", "builds_on", "protected_move_ref", "invariant", "novelty"))
+    block["protected_move_ref"] = "<<FILL: question id>>-MOVE-1"
+    return block
+
+
+
 def question_template(band: str, kind: str) -> dict:
-    """kind LIBRARY: a question in a subject package (authored, adapted, NCERT, exemplar); kind PYQ: an exam-bank question."""
+    """kind LIBRARY: a question in a subject package (authored, adapted, NCERT, exemplar); kind TRANSFER: a package question for Core2B;
+    kind PYQ: an exam-bank question."""
     package, bank = load(PACKAGE_SCHEMA), load(BANK_SCHEMA)
     pdefs, bdefs = package["$defs"], bank["$defs"]
     bp = blueprint(CORE2)
@@ -200,6 +231,17 @@ def question_template(band: str, kind: str) -> dict:
         "basis": fill("why this band: what the learner must choose, translate, chain, compute and avoid"),
     }
     analysis = record.setdefault("extensions", {}).setdefault("grade9v3:analysis", {})
+    extension = assurance_extension()
+    models = extension.pop("$computation_model_types")
+    record["extensions"].update(extension)
+    if kind == "TRANSFER":                     # Core2B: the changed decision is protected, so no hint may hand it over
+        record["transfer"] = transfer_block(pdefs)
+        record["representation_roles"] = {"initial_ref": None, "safe_ref": fill("REP-... shown before the attempt; it must not show the protected move"),
+                                          "bound_ref": None, "stage_refs": []}
+        record["exposure"] = [{"core": "CORE2B", "role": "NEW_TRANSFER", "artifact_ref": None}]
+        for rung in record["scaffolds"]:
+            if rung["supports_move_ref"].endswith("-MOVE-1"):
+                rung["supports_move_ref"] = rung["supports_move_ref"][:-1] + "2"
     if kind == "PYQ":
         record["origin"] = one_of(["ORIGINAL", "ADAPTED"])
         record["extensions"]["grade9v3:provenance_class"] = one_of(bdefs["exam_bank_question"]["properties"]["extensions"]
@@ -218,7 +260,8 @@ def question_template(band: str, kind: str) -> dict:
         "score_range": [lo, hi],
         "blueprint": f"{bp['id']}@{bp['version']}",
         "destination": ("an exam-bank file under <Subject>/library/exam-bank/" if kind == "PYQ"
-                        else "questions[] of the subject package <Subject>/library/<slug>.v1.json"),
+                        else "questions[] of the subject package <Subject>/library/<slug>.v1.json, and its id in the product manifest's "
+                             + ("selection.core2b" if kind == "TRANSFER" else "selection.core2a (or core2b for a transfer task)")),
         "rules": [
             "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
             "status stays CANDIDATE: promotion is a review with a receipt, never an edit.",
@@ -226,8 +269,19 @@ def question_template(band: str, kind: str) -> dict:
             f"The band is {band}: score {lo} to {hi}, the sum of the five components. A different score means a different template.",
             f"scaffolds: {blueprints.target_for(ladder, band)} rungs for {band}, in the order the learner meets them.",
             "adaptation is null unless origin is ADAPTED; then it names the parent and what changed.",
+            "options are the choices without letters: the page writes (A), (B), ... itself.",
+            "Write math as the existing records do; the page shows it as written (typesetting is a separate duty).",
+            "extensions.problem_specification and answer_contract let SELF_CONTAINMENT run. Add extensions.computation_model only when "
+            f"the problem fits an implemented model ({', '.join(models)}); then ANSWER_CORRECTNESS recomputes your answer.",
             "An EXPECTED component you leave empty needs a written reason in extensions['grade9v3:component_waivers'] {COMPONENT_ID: reason}.",
             "Never write HTML: the renderer makes the page from this record.",
+        ] + ([
+            "Core2B protects the decision the transfer changes: transfer.protected_move_ref names a DECIDE move (MOVE-1 here), and no "
+            "scaffold may support it, because pre-attempt help would hand it over. representation_roles.safe_ref is shown before the "
+            "attempt and must not show that move. transfer.novelty names the earlier items you checked this against and why it is new.",
+        ] if kind == "TRANSFER" else []) + [
+            "Then run: authoring_templates.py check FILE --into <package> --product <manifest>. It runs the library intake and the "
+            "renderer on the record in place and reports only what the record adds.",
         ],
         "components": guide(bp, band),
     }, **record}
@@ -256,13 +310,11 @@ def core1a_template() -> dict:
             refs.append(step["id"])
             record["teaching_path"].append(step)
         cu = instance(defs["construction_unit"], defs, f"construction unit {unit}",
-                      include=("decision", "crux_question_refs", "crux_step_ref", "relation_refs", "worked_anchor_ref",
-                               "representation_ref", "reveal_stage_refs", "misconception_indexes", "independent_checks"))
+                      include=("decision", "relation_refs", "worked_anchor_ref", "representation_ref", "reveal_stage_refs",
+                               "misconception_indexes", "independent_checks"))
         cu["id"] = f"CU-<<FILL: microtopic id without MIC->>-{unit}"
         cu["decision"] = fill(f"UNIT_HEADER unit {unit}: the decision this unit teaches the learner to make")
         cu["step_refs"] = refs
-        cu["crux_question_refs"] = [fill(f"QUESTION_BRIDGE unit {unit}: id of {crux} whose crux this unit builds")]
-        cu["crux_step_ref"] = refs[-1]
         cu["relation_refs"] = [fill(f"EQUATIONS unit {unit}: REL-... id")]
         cu["worked_anchor_ref"] = fill(f"WORKED_EXAMPLE unit {unit}: id of a library question worked as the example")
         cu["representation_ref"] = fill(f"STAGED_VISUAL unit {unit}: REP-... id of the representation")
@@ -278,17 +330,58 @@ def core1a_template() -> dict:
         "rules": [
             "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
             "status stays CANDIDATE.",
-            "One construction unit per decision the learner must make. The two units here show both depths: a unit that builds the "
-            f"crux of a D1 or D2 question needs {blueprints.target_for(steps_c, 'D1')} steps, of a D3 or D4 question "
-            f"{blueprints.target_for(steps_c, 'D3')}. Copy or delete units to match the microtopic.",
-            "Every step_refs id is a teaching_path step; every crux question exists in a library or exam bank; every "
-            "misconception index points into misconceptions.",
+            "One construction unit per decision the learner must make. The two units here show both depths: a unit needs "
+            f"{blueprints.target_for(steps_c, 'D1')} steps, and {blueprints.target_for(steps_c, 'D3')} when it builds the crux of a D3 or D4 "
+            "question of the product's bank (then its last step is the move that question turns on). Copy or delete units to match.",
+            "Every step_refs id is a teaching_path step; every misconception index points into misconceptions.",
+            "crux_question_refs and crux_step_ref name a question of the PRODUCT's bank (its bank_refs), never a package question; "
+            "when the bank holds none for this concept, leave both out.",
+            "worked_anchor_ref names a package question that exercises exactly this unit's move; give each unit its own if you can.",
+            staged_visual_rule() + " Use core1a/representation.template.json and .svg.",
             f"QUICK_CHECK: {checks_c.get('target_items')} independent checks per unit, one per role ({', '.join(roles)}).",
             "Never write HTML: the renderer makes the page from this record.",
+            "For a microtopic that already exists, start from `authoring_templates.py new core1a --microtopic ID`, which carries its "
+            "fields over. Then run: check FILE --into <package> --product <manifest> [--with <representations.json>].",
         ],
         "components": guide(bp, None),
     }, **record}
     return record
+
+
+def staged_visual_rule() -> str:
+    c = component(blueprint(CORE1A), "STAGED_VISUAL")
+    return (f"STAGED_VISUAL: {blueprints.target_for(c, 'D1')} stages, {blueprints.target_for(c, 'D3')} for a unit that builds the crux of a "
+            "D3 or D4 question. The page shows ONE stage at a time, so every data-g9-stage-id group must be a complete picture "
+            "(repeat the base drawing in each group). viewBox at most 440 wide, every label at least 14 units, a <title> and <desc> "
+            "named by aria-labelledby.")
+
+
+def representation_template() -> dict:
+    defs = load(PACKAGE_SCHEMA)["$defs"]
+    record = instance(defs["representation"], defs, "", include=("correspondence", "interactive_resource_refs", "reveal_stages"))
+    record.update({"version": "0.1.0", "status": "CANDIDATE", "evidence_refs": [], "extensions": {}, "scene_instances": [],
+                   "interactive_resource_refs": [],
+                   "kind": fill("one of the representation_kinds the subject contract declares (<Subject>/adapter/CoreContracts.json)"),
+                   "rendered_asset_refs": [fill("<Subject>/assets/representations/<REP id>.svg")]})
+    record["reveal_stages"] = [{"id": f"<<FILL: stage id>>-V{n}", "label": fill(f"stage {n} label"), "purpose": fill(f"what stage {n} shows"),
+                                "visible_elements": [fill("one of required_elements")]} for n in range(3)]
+    record["correspondence"] = [{"element": fill("one of required_elements"), "symbol": fill("a symbol one of relation_refs declares"),
+                                 "in_words": fill("what that part of the picture is, in words")}]
+    return {HEADER: {"kind": "REPRESENTATION", "destination": "representations[] of the subject package, with its SVG beside the others",
+                     "rules": [staged_visual_rule(),
+                               "Each reveal_stages id is the data-g9-stage-id of one group in the SVG, in the same order.",
+                               "correspondence binds an element the figure must contain to a symbol a bound relation declares.",
+                               "Draw each unit its own picture; do not reuse one figure on many units."]}, **record}
+
+
+def svg_skeleton() -> str:
+    groups = "".join(
+        f'<g data-g9-stage-id="STAGE-ID-V{n}" font-family="system-ui,sans-serif" font-size="14" fill="currentColor" stroke="currentColor">'
+        f'<text x="16" y="24" stroke="none" font-weight="700">Stage {n + 1} title</text>'
+        '<!-- the complete picture for this stage: repeat the base drawing, then add what this stage reveals -->'
+        f'<text x="16" y="200" stroke="none">what stage {n + 1} adds</text></g>\n' for n in range(3))
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 220" role="img" aria-labelledby="FIG-title FIG-desc">\n'
+            '<title id="FIG-title">What the figure shows</title><desc id="FIG-desc">Stage by stage, in words.</desc>\n' + groups + "</svg>\n")
 
 
 APPROVAL_RECORD = {
@@ -320,16 +413,23 @@ def readme() -> str:
     for band in BANDS:
         lines.append(f"| `question-bank/pyq-question.{band}.template.json` | a previous-year exam question at {band} | an exam-bank file |")
     lines += [
+        "| `question-bank/transfer-question.D1..D4.template.json` | a Core2B transfer task (the changed decision is protected) | the package `questions[]` and `selection.core2b` |",
+        "| `core1a/representation.template.json`, `.svg` | the picture a Core1A unit stages | the package `representations[]` and `<Subject>/assets/representations/` |",
         "| `approvals/owner-approval.template.json` | the Owner's decision on a rung ladder or the atlas | `approvals/` beside what it approves |",
         "",
         "An owner-supplied question is not authored from a template: `owner_bank.py new` keeps the Owner's words verbatim.",
         "",
         "## The loop an agent follows",
         "",
-        "1. Copy the template for the record and band. Choose the band from the score (vocabulary ranges), never the other way round.",
-        "2. Fill it. The `$template.components` list says, per component, which fields it reads, how many items the band needs, and how to write them.",
-        "3. `python3 Shared/tools/authoring_templates.py check FILE` until it prints nothing: no placeholder, schema-valid, blueprint depth met, no claim an author cannot make.",
-        "4. Delete `$template` and add the record to its file. `render_core.py gaps` then shows what the product still needs.",
+        "1. Find the work: `packet atlas --subject S` (scope, bands, missing D1-D4) and `packet rungs --matrix FILE` (the ladder).",
+        "2. Start from a template made for the package: `new question --package P --band D4 [--role CORE2B]` or",
+        "   `new core1a --package P --microtopic MIC-...`. Choose the band from the score (vocabulary ranges), never the other way round.",
+        "3. Fill it. `$template.components` says, per component, which fields it reads, how many items the band needs and how to write them;",
+        "   `$template.rules` says what the page and the gates expect (no option letters, one complete picture per stage, crux only from the bank).",
+        "4. Delete `$template`, then `check FILE --into <package> --product <manifest> [--with representations.json]` until it prints `ok`.",
+        "   This runs the library intake, the depiction checks and the renderer on the record in place and reports only what the record adds;",
+        "   it also lists what it closes and any waiver, which a reviewer must accept.",
+        "5. Add the record to its package and its id to the product manifest; render the product and look at the page on a tablet width.",
         "",
         "## Approvals",
         "",
@@ -345,7 +445,10 @@ def outputs() -> dict[str, str]:
            "approvals/owner-approval.template.json": dumps(APPROVAL_RECORD)}
     for band in BANDS:
         out[f"question-bank/library-question.{band}.template.json"] = dumps(question_template(band, "LIBRARY"))
+        out[f"question-bank/transfer-question.{band}.template.json"] = dumps(question_template(band, "TRANSFER"))
         out[f"question-bank/pyq-question.{band}.template.json"] = dumps(question_template(band, "PYQ"))
+    out["core1a/representation.template.json"] = dumps(representation_template())
+    out["core1a/representation.template.svg"] = svg_skeleton()
     return out
 
 
@@ -400,6 +503,19 @@ def library_questions() -> dict[str, dict]:
             for q in data.get("questions") or []:
                 if isinstance(q, dict) and q.get("id"):
                     found[q["id"]] = q
+    return found
+
+
+def bank_questions() -> dict[str, dict]:
+    found = {}
+    for path in sorted(REPO.glob("*/library/exam-bank/*.json")):
+        try:
+            data = load(path)
+        except (ValueError, UnicodeDecodeError):
+            continue
+        for q in (data.get("questions") or []) if isinstance(data, dict) else []:
+            if isinstance(q, dict) and q.get("id"):
+                found[q["id"]] = q
     return found
 
 
@@ -462,6 +578,7 @@ def check_core1a(record: dict) -> list[str]:
     step_ids = {s.get("id") for s in record.get("teaching_path") or []}
     misconceptions = len(record.get("misconceptions") or [])
     questions = library_questions()
+    bank = bank_questions()
     units = record.get("construction_units") or []
     if not units:
         out.append("construction_units: a Core1A concept is built in construction units; there are none")
@@ -473,9 +590,10 @@ def check_core1a(record: dict) -> list[str]:
             out.append(f"{where}: step_refs not in teaching_path: {missing}")
         bands = []
         for qid in cu.get("crux_question_refs") or []:
-            q = questions.get(qid)
+            q = bank.get(qid)
             if q is None:
-                out.append(f"{where}: crux question {qid} is in no library or exam bank")
+                out.append(f"{where}: crux question {qid} is in no exam bank; a crux names a question of the product's bank "
+                           "(bank_refs), or is left out")
             elif band_of_question(q):
                 bands.append(band_of_question(q))
         band = max(bands) if bands else None
@@ -519,6 +637,19 @@ def check_approval(record: dict, repo: Path = REPO) -> list[str]:
     return out
 
 
+def check_report(path: Path, into: Path | None = None, product: Path | None = None, extra: list[dict] = ()) -> dict:
+    """check_file(), and with a package (and a product) what the real gates say the record adds, closes and waives."""
+    problems = check_file(path)
+    report = {"problems": problems, "closed": [], "waived": []}
+    if into is None or any(p.startswith(("placeholder left", HEADER)) for p in problems):
+        return report
+    record = load(path)
+    gates = gate_findings(record, into, product, list(extra))
+    report["problems"] = problems + gates["new"]
+    report["closed"], report["waived"] = gates["closed"], gates["waived"]
+    return report
+
+
 def check_file(path: Path) -> list[str]:
     record = load(path)
     if isinstance(record, dict) and "approval_id" in record and "subject_digest" in record:
@@ -536,7 +667,152 @@ def check_file(path: Path) -> list[str]:
     return check_core1a(record) if kind == "CORE1A_MICROTOPIC" else check_question(record, kind)
 
 
-# ---------------------------------------------------------------- approval packets
+# ---------------------------------------------------------------- the real gates, on the record in place
+
+COLLECTIONS = {"microtopics": "teaching_path", "questions": "stem", "representations": "rendered_asset_refs", "relations": "expression"}
+
+
+def collection_of(record: dict) -> str:
+    for name, marker in COLLECTIONS.items():
+        if marker in record:
+            return name
+    raise ValueError(f"{record.get('id')}: not a microtopic, question, representation or relation")
+
+
+def placed(package: dict, records: list[dict]) -> dict:
+    """The package with each record added, or put in place of the one with its id."""
+    out = copy.deepcopy(package)
+    for record in records:
+        rows = out.setdefault(collection_of(record), [])
+        out[collection_of(record)] = [r for r in rows if r.get("id") != record.get("id")] + [record]
+    return out
+
+
+def library_findings(package: dict, subject_root: Path) -> set[str]:
+    from Shared.library import depiction, intake
+    found = {f"library schema: {e}" for e in intake.schema_errors(package)}
+    found |= {f"library intake {f.get('point')}: {f.get('detail')}" for f in intake.check(package)["findings"]}
+    records = {r["id"]: {**r, "_collection": name} for name in ("microtopics", "representations", "relations", "buckets", "questions")
+               for r in package.get(name) or [] if isinstance(r, dict) and r.get("id")}
+    found |= {f"depiction {f['point']} {f['record']}: {f['detail']}" for f in depiction.findings(records, depiction.declared_kinds(subject_root))}
+    return found
+
+
+_RENDERED: dict[tuple, tuple[set[str], list[dict]]] = {}
+
+
+def renderer_gaps(manifest_path: Path) -> tuple[set[str], list[dict]]:
+    """The renderer's gaps for a product at the reference depth (new authoring is held to the reference, not the floor).
+    A committed product is rendered once per process; a staged one every time."""
+    from Shared.tools import render_core
+    manifest = load(manifest_path)
+    inputs = [manifest_path] + [REPO / r for r in manifest.get("package_refs", []) + manifest.get("bank_refs", [])]
+    key = (str(manifest_path), tuple(p.stat().st_mtime_ns for p in inputs if p.exists()))
+    if SCRATCH in manifest_path.parents or key not in _RENDERED:
+        _, gaps, _, _, waived = render_core.build_report(manifest_path, "PAGES", held_to="REFERENCE")
+        result = ({f"renderer {g.get('core')} {g.get('duty')} {g.get('record')}: {g.get('detail')}" for g in gaps}, waived)
+        if SCRATCH in manifest_path.parents:
+            return result
+        _RENDERED[key] = result
+    return _RENDERED[key]
+
+
+def role_of(question: dict) -> str:
+    cores = {e.get("core") for e in question.get("exposure") or [] if isinstance(e, dict)}
+    return "core2b" if "CORE2B" in cores else "core2" if "CORE2" in cores else "core2a"
+
+
+def gate_findings(record: dict, package_path: Path, product_path: Path | None = None, extra: list[dict] = ()) -> dict:
+    """What the record adds to what the real gates already say: the library intake and depiction on its package, and, with a
+    product, the renderer at the reference depth. Returns {"new": [...], "closed": [...], "waived": [...]}."""
+    package = load(package_path)
+    after = placed(package, [*extra, record])
+    subject_root = REPO / str(package.get("subject") or package_path.parts[len(REPO.parts)])
+    before_set, after_set = library_findings(package, subject_root), library_findings(after, subject_root)
+    waived: list[dict] = []
+    if product_path is not None:
+        import shutil
+        import uuid
+        manifest = load(product_path)
+        stage = SCRATCH / uuid.uuid4().hex[:12]
+        stage.mkdir(parents=True, exist_ok=True)
+        try:
+            staged_package = stage / package_path.name
+            staged_package.write_text(dumps(after), encoding="utf-8")
+            staged = copy.deepcopy(manifest)
+            staged["package_refs"] = [rel(staged_package) if (REPO / ref).resolve() == package_path.resolve() else ref
+                                      for ref in manifest["package_refs"]]
+            if rel(staged_package) not in staged["package_refs"]:
+                raise ValueError(f"{rel(package_path)} is not one of {rel(product_path)}'s package_refs")
+            selection = staged.setdefault("selection", {})
+            key = "microtopics" if collection_of(record) == "microtopics" else role_of(record) if collection_of(record) == "questions" else None
+            if key and record["id"] not in selection.setdefault(key, []):
+                selection[key].append(record["id"])
+            staged_manifest = stage / "manifest.json"
+            staged_manifest.write_text(dumps(staged), encoding="utf-8")
+            gaps_before, _ = renderer_gaps(product_path)
+            gaps_after, waived = renderer_gaps(staged_manifest)
+            before_set, after_set = before_set | gaps_before, after_set | gaps_after
+        finally:
+            shutil.rmtree(stage, ignore_errors=True)
+    ids = {record.get("id")} | {u.get("id") for u in record.get("construction_units") or []}
+    seen = [w for w in waived if w.get("record") in ids]
+    # every waiver the record declares goes to a reviewer, including one no page consults (Core2B has no components to waive)
+    for component_id, reason in blueprints.waivers_of(record).items():
+        if not any(w.get("component") == component_id for w in seen):
+            seen.append({"component": component_id, "record": record.get("id"), "reason": reason, "core": None})
+    return {"new": sorted(after_set - before_set), "closed": sorted(before_set - after_set), "waived": seen}
+
+
+# ---------------------------------------------------------------- new: a template instantiated for one package
+
+def package_of(path: Path) -> dict:
+    data = load(path)
+    if not isinstance(data, dict) or "microtopics" not in data:
+        raise ValueError(f"{rel(path)} is not a subject package")
+    return data
+
+
+def new_question(band: str, package_path: Path, role: str) -> dict:
+    package = package_of(package_path)
+    record = question_template(band, "TRANSFER" if role == "CORE2B" else "LIBRARY")
+    ids = [q["id"] for q in package.get("questions") or []]
+    prefix = re.match(r"^([A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+-)", ids[0]).group(1) if ids and re.match(r"^([A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+-)", ids[0]) else "Q-"
+    record["id"] = f"{prefix}{'2B' if role == 'CORE2B' else '2A'}-<<FILL: short name>>-01"
+    record["primary_capability_ref"] = one_of([c["id"] for c in package.get("capabilities") or []])
+    record["family_ref"] = one_of([f["id"] for f in package.get("question_families") or []])
+    record["source_refs"] = [one_of([r["id"] for r in package.get("resources") or [] if r.get("id")])]
+    record["origin_ref"] = one_of([r["id"] for r in package.get("resources") or [] if r.get("id")])
+    record[HEADER]["package"] = rel(package_path)
+    record[HEADER]["existing_ids"] = ids
+    return record
+
+
+def new_core1a(microtopic_id: str, package_path: Path) -> dict:
+    package = package_of(package_path)
+    existing = next((m for m in package["microtopics"] if m.get("id") == microtopic_id), None)
+    if existing is None:
+        raise ValueError(f"{microtopic_id} is not in {rel(package_path)}")
+    template = core1a_template()
+    header = template.pop(HEADER)
+    record = copy.deepcopy(existing)
+    record["construction_units"] = existing.get("construction_units") or template["construction_units"]
+    if not existing.get("construction_units"):
+        steps = [s.get("id") for s in existing.get("teaching_path") or []]
+        for unit in record["construction_units"]:
+            unit["id"] = unit["id"].replace("<<FILL: microtopic id without MIC->>", microtopic_id.removeprefix("MIC-"))
+            unit["step_refs"] = [fill("a teaching_path step id; add a step to teaching_path when the unit needs one")
+                                 for _ in unit["step_refs"]]
+        header["existing_steps"] = steps
+    kinds = sorted(load(REPO / package.get("subject", "") / "adapter/CoreContracts.json").get("representation_kinds", []) and
+                   [k["id"] for k in load(REPO / package["subject"] / "adapter/CoreContracts.json")["representation_kinds"]])
+    header.update({"package": rel(package_path), "representation_kinds": kinds,
+                   "existing_representations": [r["id"] for r in package.get("representations") or []],
+                   "existing_questions": [q["id"] for q in package.get("questions") or []]})
+    return {HEADER: header, **record}
+
+
+
 
 def library_packages(subject: str) -> list[tuple[Path, dict]]:
     rows = []
@@ -734,30 +1010,66 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     w = sub.add_parser("write", help="regenerate template/v4/")
     w.add_argument("--check", action="store_true", help="exit 1 when template/v4/ is stale, writing nothing")
+    n = sub.add_parser("new", help="a template instantiated for one package")
+    n.add_argument("what", choices=("question", "core1a"))
+    n.add_argument("--package", required=True)
+    n.add_argument("--band", choices=BANDS)
+    n.add_argument("--role", choices=("CORE2A", "CORE2B"), default="CORE2A")
+    n.add_argument("--microtopic")
+    n.add_argument("--out")
     c = sub.add_parser("check", help="a filled template or an approval record")
     c.add_argument("files", nargs="+")
+    c.add_argument("--into", help="the subject package the record joins: run the library intake and depiction on it in place")
+    c.add_argument("--product", help="the product manifest that shows it: also run the renderer at the reference depth")
+    c.add_argument("--with", dest="extra", nargs="*", default=[], help="JSON files of records the record needs (representations, relations)")
     p = sub.add_parser("packet", help="an approval packet for the Owner")
     p.add_argument("what", choices=("rungs", "atlas"))
     p.add_argument("--matrix")
     p.add_argument("--subject")
     p.add_argument("--out", help="write the packet here instead of printing it")
     args = parser.parse_args(argv)
+    path = lambda value: Path(value) if Path(value).is_absolute() else REPO / value      # noqa: E731
 
     if args.cmd == "write":
         return write(args.check)
+    if args.cmd == "new":
+        if args.what == "question":
+            if not args.band:
+                parser.error("new question needs --band")
+            record = new_question(args.band, path(args.package), args.role)
+        else:
+            if not args.microtopic:
+                parser.error("new core1a needs --microtopic")
+            record = new_core1a(args.microtopic, path(args.package))
+        text = dumps(record)
+        if args.out:
+            Path(args.out).write_text(text, encoding="utf-8")
+            print(f"wrote {args.out}")
+        else:
+            sys.stdout.write(text)
+        return 0
     if args.cmd == "check":
+        extra = []
+        for name in args.extra:
+            data = load(path(name))
+            extra += data if isinstance(data, list) else [data]
         failed = 0
         for name in args.files:
-            problems = check_file(Path(name))
+            report = check_report(Path(name), path(args.into) if args.into else None, path(args.product) if args.product else None, extra)
+            problems = report["problems"]
             print(f"{name}: {'ok' if not problems else f'{len(problems)} problem(s)'}")
             for problem in problems:
                 print(f"  - {problem}")
+            for closed in report["closed"]:
+                print(f"  closes: {closed}")
+            for waiver in report["waived"]:
+                print(f"  WAIVED, for a reviewer to accept: {waiver.get('component')} on {waiver.get('record')}: {waiver.get('reason')}")
             failed += bool(problems)
         return 1 if failed else 0
     if args.what == "rungs":
         if not args.matrix:
             parser.error("packet rungs needs --matrix")
-        text = rung_packet(Path(args.matrix) if Path(args.matrix).is_absolute() else REPO / args.matrix)
+        text = rung_packet(path(args.matrix))
     else:
         if not args.subject:
             parser.error("packet atlas needs --subject")

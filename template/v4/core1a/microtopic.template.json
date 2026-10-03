@@ -6,10 +6,14 @@
     "rules": [
       "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
       "status stays CANDIDATE.",
-      "One construction unit per decision the learner must make. The two units here show both depths: a unit that builds the crux of a D1 or D2 question needs 3 steps, of a D3 or D4 question 4. Copy or delete units to match the microtopic.",
-      "Every step_refs id is a teaching_path step; every crux question exists in a library or exam bank; every misconception index points into misconceptions.",
+      "One construction unit per decision the learner must make. The two units here show both depths: a unit needs 3 steps, and 4 when it builds the crux of a D3 or D4 question of the product's bank (then its last step is the move that question turns on). Copy or delete units to match.",
+      "Every step_refs id is a teaching_path step; every misconception index points into misconceptions.",
+      "crux_question_refs and crux_step_ref name a question of the PRODUCT's bank (its bank_refs), never a package question; when the bank holds none for this concept, leave both out.",
+      "worked_anchor_ref names a package question that exercises exactly this unit's move; give each unit its own if you can.",
+      "STAGED_VISUAL: 3 stages, 4 for a unit that builds the crux of a D3 or D4 question. The page shows ONE stage at a time, so every data-g9-stage-id group must be a complete picture (repeat the base drawing in each group). viewBox at most 440 wide, every label at least 14 units, a <title> and <desc> named by aria-labelledby. Use core1a/representation.template.json and .svg.",
       "QUICK_CHECK: 3 independent checks per unit, one per role (CHECK, APPLY, CONNECT).",
-      "Never write HTML: the renderer makes the page from this record."
+      "Never write HTML: the renderer makes the page from this record.",
+      "For a microtopic that already exists, start from `authoring_templates.py new core1a --microtopic ID`, which carries its fields over. Then run: check FILE --into <package> --product <manifest> [--with <representations.json>]."
     ],
     "components": [
       {
@@ -269,10 +273,6 @@
         "<<FILL: microtopic id>>-S3"
       ],
       "decision": "<<FILL: UNIT_HEADER unit 1: the decision this unit teaches the learner to make>>",
-      "crux_question_refs": [
-        "<<FILL: QUESTION_BRIDGE unit 1: id of a D1 or D2 question whose crux this unit builds>>"
-      ],
-      "crux_step_ref": "<<FILL: microtopic id>>-S3",
       "relation_refs": [
         "<<FILL: EQUATIONS unit 1: REL-... id>>"
       ],
@@ -306,10 +306,6 @@
         "<<FILL: microtopic id>>-S7"
       ],
       "decision": "<<FILL: UNIT_HEADER unit 2: the decision this unit teaches the learner to make>>",
-      "crux_question_refs": [
-        "<<FILL: QUESTION_BRIDGE unit 2: id of a D3 or D4 question whose crux this unit builds>>"
-      ],
-      "crux_step_ref": "<<FILL: microtopic id>>-S7",
       "relation_refs": [
         "<<FILL: EQUATIONS unit 2: REL-... id>>"
       ],

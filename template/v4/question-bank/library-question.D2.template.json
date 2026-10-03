@@ -8,7 +8,7 @@
       5
     ],
     "blueprint": "BP-CORE2-SOURCE-QUESTION@1.5.0",
-    "destination": "questions[] of the subject package <Subject>/library/<slug>.v1.json",
+    "destination": "questions[] of the subject package <Subject>/library/<slug>.v1.json, and its id in the product manifest's selection.core2a (or core2b for a transfer task)",
     "rules": [
       "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
       "status stays CANDIDATE: promotion is a review with a receipt, never an edit.",
@@ -16,8 +16,12 @@
       "The band is D2: score 3 to 5, the sum of the five components. A different score means a different template.",
       "scaffolds: 3 rungs for D2, in the order the learner meets them.",
       "adaptation is null unless origin is ADAPTED; then it names the parent and what changed.",
+      "options are the choices without letters: the page writes (A), (B), ... itself.",
+      "Write math as the existing records do; the page shows it as written (typesetting is a separate duty).",
+      "extensions.problem_specification and answer_contract let SELF_CONTAINMENT run. Add extensions.computation_model only when the problem fits an implemented model (LINEAR_KINEMATICS, PROJECTILE_MAX_HEIGHT, PROJECTILE_NO_DRAG, PROJECTILE_TIME_OF_FLIGHT); then ANSWER_CORRECTNESS recomputes your answer.",
       "An EXPECTED component you leave empty needs a written reason in extensions['grade9v3:component_waivers'] {COMPONENT_ID: reason}.",
-      "Never write HTML: the renderer makes the page from this record."
+      "Never write HTML: the renderer makes the page from this record.",
+      "Then run: authoring_templates.py check FILE --into <package> --product <manifest>. It runs the library intake and the renderer on the record in place and reports only what the record adds."
     ],
     "components": [
       {
@@ -153,6 +157,34 @@
     "grade9v3:analysis": {
       "expected_time_seconds": "<<FILL: DIFFICULTY_WHY extensions.grade9v3:analysis.expected_time_seconds>>",
       "common_wrong_route": "<<FILL: TRAP extensions.grade9v3:analysis.common_wrong_route>>"
+    },
+    "problem_specification": {
+      "requested_outputs": [
+        {
+          "id": "<<FILL: output id, e.g. v>>",
+          "quantity_kind": "<<FILL: what it is: speed, force, energy, ...>>"
+        }
+      ],
+      "visible_facts": [
+        {
+          "symbol": "<<FILL: visible fact symbol>>",
+          "value": "<<FILL: visible fact value>>",
+          "unit": "<<FILL: visible fact unit>>",
+          "expression": "<<FILL: visible fact expression>>",
+          "visible_in": "<<ONE OF: STEM | FIGURE>>"
+        }
+      ],
+      "declared_assumptions": [
+        "<<FILL: an assumption the stem or the conditions state>>"
+      ],
+      "permitted_constants": []
+    },
+    "answer_contract": {
+      "answer_type": "<<ONE OF: NUMERIC | QUANTITY | SYMBOLIC_EXPRESSION | EQUATION | VECTOR | OPTION | TRUE_FALSE | PROPOSITION | COMPOUND>>",
+      "requested_outputs": [
+        "<<FILL: output id>>"
+      ],
+      "equivalence_policy": "<<ONE OF: EXACT | NUMERIC_UNIT_EQUIVALENCE | SYMBOLIC_EQUIVALENCE | OPTION_MATCH>>"
     }
   },
   "origin": "<<ONE OF: ORIGINAL | ADAPTED | AUTHORED>>",

@@ -41,9 +41,9 @@ def filled(value, ids: dict[str, str]):
     return at.PLACEHOLDER.sub("Authored text written for this record.", value)
 
 
-def library_question_ids() -> dict[str, list[str]]:
+def bank_question_ids() -> dict[str, list[str]]:
     by_band: dict[str, list[str]] = {}
-    for qid, q in sorted(at.library_questions().items()):
+    for qid, q in sorted(at.bank_questions().items()):
         if at.band_of_question(q):
             by_band.setdefault(at.band_of_question(q), []).append(qid)
     return by_band
@@ -56,11 +56,20 @@ class GeneratedFromTheBlueprint(unittest.TestCase):
     def test_each_band_gets_the_hint_ladder_and_score_range_the_sources_set(self):
         ladder = at.component(at.blueprint(at.CORE2), "HINT_LADDER")
         for band in at.BANDS:
-            for kind in ("library", "pyq"):
+            for kind in ("library", "transfer", "pyq"):
                 t = template(f"question-bank/{kind}-question.{band}.template.json")
                 self.assertEqual(len(t["scaffolds"]), blueprints.target_for(ladder, band), f"{kind} {band}")
                 self.assertEqual(t[at.HEADER]["score_range"], list(at.band_range(band)))
                 self.assertEqual(t["status"], "CANDIDATE")
+
+    def test_a_transfer_template_gives_no_hint_on_the_protected_decision(self):
+        for band in at.BANDS:
+            t = template(f"question-bank/transfer-question.{band}.template.json")
+            protected = t["transfer"]["protected_move_ref"]
+            move = next(m for m in t["answer"]["reasoning_route"] if m["id"] == protected)
+            self.assertEqual(move["kind"], "DECIDE", band)
+            self.assertNotIn(protected, [s["supports_move_ref"] for s in t["scaffolds"]], band)
+            self.assertIn("safe_ref", t["representation_roles"])
 
     def test_core1a_units_show_both_depths_the_blueprint_asks_for(self):
         steps = at.component(at.blueprint(at.CORE1A), "CONSTRUCTION_STEPS")
@@ -159,14 +168,15 @@ class AnExamBankQuestion(unittest.TestCase):
 
 class AFilledCore1A(unittest.TestCase):
     def setUp(self):
-        bands = library_question_ids()
+        bands = bank_question_ids()
         self.easy, self.hard = (bands.get("D2") or bands["D1"])[0], (bands.get("D3") or bands["D4"])[0]
+        anchor = sorted(at.library_questions())[0]
         record = filled(template("core1a/microtopic.template.json"), {"microtopic id": "MIC-TEST-TEMPLATE", "microtopic id without MIC-": "TEST-TEMPLATE"})
         record.update({"id": "MIC-TEST-TEMPLATE", "bucket_id": "BUCKET-PHY-NLM-FIRST-LAW", "primary_capability_ref": "CAP-TEST-TEMPLATE"})
         record["exit_task"]["answer"]["verification_status"] = "CHECKED_BY_AUTHOR"
         for unit, crux in zip(record["construction_units"], (self.easy, self.hard)):
             unit["crux_question_refs"] = [crux]
-            unit["worked_anchor_ref"] = crux
+            unit["worked_anchor_ref"] = anchor
             unit["representation_ref"] = "REP-TEST-TEMPLATE"
             unit["relation_refs"] = ["REL-TEST-TEMPLATE"]
         self.record = record
@@ -187,7 +197,7 @@ class AFilledCore1A(unittest.TestCase):
     def test_a_crux_question_that_does_not_exist_is_refused(self):
         bad = copy.deepcopy(self.record)
         bad["construction_units"][0]["crux_question_refs"] = ["Q-DOES-NOT-EXIST"]
-        self.assertTrue(any("in no library" in p for p in at.check_core1a(bad)))
+        self.assertTrue(any("in no exam bank" in p for p in at.check_core1a(bad)))
 
     def test_two_quick_checks_and_a_dangling_misconception_are_refused(self):
         bad = copy.deepcopy(self.record)
@@ -224,6 +234,97 @@ class OwnerApprovals(unittest.TestCase):
         first, second = at.atlas_packet("Physics"), at.atlas_packet("Physics")
         self.assertEqual(first, second)
         self.assertIn(at.atlas_digest("Physics"), first)
+
+
+FIXTURES = REPO / "tests/fixtures/authoring/wep"
+PACKAGE = REPO / "Physics/library/phy-work-energy-power.v1.json"
+PRODUCT = REPO / "products/physics/phy-work-energy-power.manifest.json"
+
+
+class TheWalkThroughThroughTheRealGates(unittest.TestCase):
+    """The first agent walk-through (Work and Energy: two Core1A units and a D4 transfer task), replayed. Each mistake made on
+    the way passed the first version of `check`; each is refused here by the gate that owns it, run on the record in place."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mic = json.loads((FIXTURES / "MIC-PHY-WEP-ENERGY-DERIVATIONS.json").read_text(encoding="utf-8"))
+        cls.question = json.loads((FIXTURES / "Q-PHY-WEP-2B-THREE-THROWS-01.json").read_text(encoding="utf-8"))
+        cls.reps = json.loads((FIXTURES / "representations.json").read_text(encoding="utf-8"))
+
+    def run_gates(self, record, reps=None):
+        return at.gate_findings(record, PACKAGE, PRODUCT, reps if reps is not None else self.reps)
+
+    def test_the_finished_records_add_nothing_and_close_their_gaps(self):
+        for record, closes in ((self.mic, "AUTHOR_CONSTRUCTION_UNITS"), (self.question, "CORE2B AUTHOR_PRACTICE")):
+            result = self.run_gates(record)
+            self.assertEqual(result["new"], [], record["id"])
+            self.assertTrue(any(closes in c for c in result["closed"]), result["closed"])
+
+    def test_a_crux_taken_from_the_package_not_the_bank_is_refused(self):
+        bad = copy.deepcopy(self.mic)
+        for unit, step in zip(bad["construction_units"], ("WEP7-2", "WEP7-4")):
+            unit["crux_question_refs"], unit["crux_step_ref"] = ["Q-PHY-WEP-2A-DERIV-01"], step
+        self.assertTrue(any("AUTHOR_QUESTION_BRIDGE" in p for p in self.run_gates(bad)["new"]))
+
+    def test_a_core2b_task_without_its_transfer_block_is_refused(self):
+        bad = copy.deepcopy(self.question)
+        del bad["transfer"], bad["representation_roles"]
+        new = self.run_gates(bad)["new"]
+        for duty in ("AUTHOR_TRANSFER_NOVELTY", "AUTHOR_LINEAGE_CHECK", "AUTHOR_SAFE_REPRESENTATION"):
+            self.assertTrue(any(duty in p for p in new), duty)
+
+    def test_a_hint_that_hands_over_the_protected_decision_is_refused(self):
+        bad = copy.deepcopy(self.question)
+        bad["transfer"]["protected_move_ref"] = bad["id"] + "-MOVE-3"          # a TRANSFORM move, and scaffolds support it
+        new = self.run_gates(bad)["new"]
+        self.assertTrue(any("library intake TRANSFER" in p and "DECIDE" in p for p in new), new)
+        self.assertTrue(any("library intake TRANSFER" in p and "scaffold" in p for p in new), new)
+
+    def test_a_figure_bound_to_a_relation_it_never_labels_is_refused(self):
+        reps = copy.deepcopy(self.reps)
+        next(r for r in reps if r["id"] == "REP-WEP-THREE-THROWS-SAFE")["relation_refs"] = ["REL-MECHANICAL-ENERGY-CONSERVATION"]
+        self.assertTrue(any("CORRESPONDENCE_ABSENT" in p for p in self.run_gates(self.question, reps)["new"]))
+
+    def test_a_label_off_the_edge_of_the_figure_is_refused(self):
+        at.SCRATCH.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=at.SCRATCH) as tmp:
+            svg = (FIXTURES / "REP-WEP-UG-SLOW-LIFT.svg").read_text(encoding="utf-8").replace(
+                "stored as ΔU_g,", "the applied work is stored as gravitational potential energy,")
+            asset = Path(tmp) / "REP-WEP-UG-SLOW-LIFT.svg"
+            asset.write_text(svg, encoding="utf-8")
+            reps = copy.deepcopy(self.reps)
+            next(r for r in reps if r["id"] == "REP-WEP-UG-SLOW-LIFT")["rendered_asset_refs"] = [asset.relative_to(REPO).as_posix()]
+            self.assertTrue(any("AUTHOR_FIGURE_TEXT" in p for p in self.run_gates(self.mic, reps)["new"]))
+
+    def test_a_waiver_is_handed_to_a_reviewer_not_accepted_silently(self):
+        waived = copy.deepcopy(self.question)
+        waived["figure_refs"] = []
+        waived["extensions"]["grade9v3:component_waivers"] = {"REPRESENTATION": "Waived for this walk-through."}
+        result = self.run_gates(waived)
+        self.assertEqual([w["component"] for w in result["waived"]], ["REPRESENTATION"])
+
+
+class TemplatesMadeForAPackage(unittest.TestCase):
+    def test_a_question_template_offers_the_packages_own_capabilities_families_and_sources(self):
+        package = json.loads(PACKAGE.read_text(encoding="utf-8"))
+        record = at.new_question("D4", PACKAGE, "CORE2B")
+        for cap in package["capabilities"]:
+            self.assertIn(cap["id"], record["primary_capability_ref"])
+        self.assertIn(package["question_families"][0]["id"], record["family_ref"])
+        self.assertTrue(record["id"].startswith("Q-PHY-WEP-2B-"))
+        self.assertEqual(record["exposure"][0]["core"], "CORE2B")
+
+    def test_a_core1a_template_for_an_existing_microtopic_keeps_what_it_already_says(self):
+        record = at.new_core1a("MIC-PHY-WEP-ENERGY-DERIVATIONS", PACKAGE)
+        package = json.loads(PACKAGE.read_text(encoding="utf-8"))
+        existing = next(m for m in package["microtopics"] if m["id"] == "MIC-PHY-WEP-ENERGY-DERIVATIONS")
+        for key in ("title", "inferential_jump", "teaching_path", "misconceptions", "exit_task"):
+            self.assertEqual(record[key], existing[key], key)
+        self.assertEqual([u["id"] for u in record["construction_units"]],
+                         ["CU-PHY-WEP-ENERGY-DERIVATIONS-1", "CU-PHY-WEP-ENERGY-DERIVATIONS-2"])
+        self.assertIn("FREE_BODY_DIAGRAM", record[at.HEADER]["representation_kinds"])
+        with self.assertRaises(ValueError):
+            at.new_core1a("MIC-DOES-NOT-EXIST", PACKAGE)
 
 
 if __name__ == "__main__":
