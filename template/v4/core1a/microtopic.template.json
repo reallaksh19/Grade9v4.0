@@ -1,0 +1,338 @@
+{
+  "$template": {
+    "kind": "CORE1A_MICROTOPIC",
+    "blueprint": "BP-CORE1A-CONSTRUCTION@1.4.0",
+    "destination": "microtopics[] of the subject package <Subject>/library/<slug>.v1.json",
+    "rules": [
+      "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
+      "status stays CANDIDATE.",
+      "One construction unit per decision the learner must make. The two units here show both depths: a unit that builds the crux of a D1 or D2 question needs 3 steps, of a D3 or D4 question 4. Copy or delete units to match the microtopic.",
+      "Every step_refs id is a teaching_path step; every crux question exists in a library or exam bank; every misconception index points into misconceptions.",
+      "QUICK_CHECK: 3 independent checks per unit, one per role (CHECK, APPLY, CONNECT).",
+      "Never write HTML: the renderer makes the page from this record."
+    ],
+    "components": [
+      {
+        "component": "CONCEPT_HEADER",
+        "level": "REQUIRED",
+        "fields": [
+          "title",
+          "extensions.grade9v3:learner_metadata"
+        ]
+      },
+      {
+        "component": "SECTION_ROUTE",
+        "level": "OPTIONAL",
+        "fields": []
+      },
+      {
+        "component": "UNIT_HEADER",
+        "level": "REQUIRED",
+        "fields": [
+          "construction_units[].decision"
+        ],
+        "repeat": "PER_CONSTRUCTION_UNIT"
+      },
+      {
+        "component": "KEY_STEP",
+        "level": "REQUIRED",
+        "fields": [
+          "inferential_jump"
+        ],
+        "hint": "inferential_jump: one or two sentences naming the step a learner does not make unaided and why it is not obvious."
+      },
+      {
+        "component": "MODEL_CONTRACT",
+        "level": "EXPECTED",
+        "fields": [
+          "entry_assumptions",
+          "prerequisite_refs"
+        ],
+        "hint": "List in entry_assumptions[] each thing a learner must already be able to do before this concept, one per entry and specific to this concept."
+      },
+      {
+        "component": "QUESTION_BRIDGE",
+        "level": "OPTIONAL",
+        "fields": [
+          "construction_units[].crux_question_refs",
+          "construction_units[].crux_step_ref",
+          "answer.crux_move_ref"
+        ],
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "Write crux_question_refs on a construction unit: the ids of the bank questions whose crux the unit builds, and crux_step_ref: the one of its step_refs that builds the move those questions turn on (the page marks that step). The toughest question of the set (the deploy names it) must be named by a unit of the concept it belongs to; that unit's steps must lead to the move the question turns on, and its worked example is that question (bank_anchor_ref). A unit that only shares the question's topic does not build its crux, and a step that mentions the idea in passing is not the step that builds it: draw the whole idea (for a sum of two vectors, every angle and not only the right angle)."
+      },
+      {
+        "component": "CONSTRUCTION_STEPS",
+        "level": "REQUIRED",
+        "fields": [
+          "construction_units[].step_refs",
+          "teaching_path"
+        ],
+        "items": 3,
+        "floor": 2,
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "Each construction unit lists step_refs naming 2 or more teaching_path steps; each step has action, why_valid and output written for this unit, none repeated from another unit. A unit that builds the crux of a D3 or D4 question (it names that question in crux_question_refs) needs 4 steps, and its last step is the move that question turns on."
+      },
+      {
+        "component": "EQUATIONS",
+        "level": "EXPECTED",
+        "fields": [
+          "construction_units[].relation_refs",
+          "relation_refs"
+        ],
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "Each construction unit names the microtopic's relations it uses in construction_units[].relation_refs; each relation record needs its expression, meaning and conditions. A subject that declares no gates writes gate_relation_ref: null."
+      },
+      {
+        "component": "WORKED_EXAMPLE",
+        "level": "REQUIRED",
+        "fields": [
+          "construction_units[].worked_anchor_ref",
+          "construction_units[].bank_anchor_ref"
+        ],
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "worked_anchor_ref names a question of the package that exercises exactly this unit's move. For the unit that builds toward a question of the product's bank (an owner-supplied question), set bank_anchor_ref to that question's id instead: the page then walks through the Owner's own question with its verified route, and nothing is copied into the package."
+      },
+      {
+        "component": "STAGED_VISUAL",
+        "level": "REQUIRED",
+        "fields": [
+          "construction_units[].representation_ref"
+        ],
+        "items": 3,
+        "floor": 2,
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "representation_ref names a representation of the package with an authored SVG that has 2 or more groups marked data-g9-stage-id and reveal_stages naming them (3 stages is the reference, 4 for a unit that builds the crux of a D3 or D4 question). Draw each unit's own picture; do not reuse one figure on many units. Draw it in a viewBox no wider than 440 units with every label at least 14 units high, so the labels read on a tablet."
+      },
+      {
+        "component": "TRAP_REPAIR",
+        "level": "REQUIRED",
+        "fields": [
+          "misconceptions",
+          "construction_units[].misconception_indexes"
+        ],
+        "floor": 1,
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "misconceptions[] holds wrong_idea, diagnostic_prompt and repair for this concept; each construction unit names the ones that apply in misconception_indexes."
+      },
+      {
+        "component": "QUICK_CHECK",
+        "level": "REQUIRED",
+        "fields": [
+          "construction_units[].independent_checks"
+        ],
+        "items": 3,
+        "floor": 1,
+        "repeat": "PER_CONSTRUCTION_UNIT",
+        "hint": "Each construction unit lists three independent_checks, each with a role: CHECK (a question that recalls the idea), APPLY (a small case to work with numbers or a picture given in the question) and CONNECT (one sentence saying which idea this leads to next). Each statement is specific to the unit."
+      },
+      {
+        "component": "EXIT_RECALL",
+        "level": "REQUIRED",
+        "fields": [
+          "exit_task"
+        ]
+      },
+      {
+        "component": "PRACTICE_LINKS",
+        "level": "OPTIONAL",
+        "fields": [
+          "practice"
+        ]
+      },
+      {
+        "component": "INTERACTIVE_BRIDGE",
+        "level": "OPTIONAL",
+        "fields": [
+          "concept_bundle.interactive"
+        ]
+      },
+      {
+        "component": "LEARNING_TRANSITIONS",
+        "level": "OPTIONAL",
+        "fields": [
+          "concept_bundle"
+        ]
+      }
+    ]
+  },
+  "id": "<<FILL: id>>",
+  "version": "1.0.0",
+  "status": "CANDIDATE",
+  "source_refs": [],
+  "evidence_refs": [],
+  "extensions": {},
+  "title": "<<FILL: title>>",
+  "bucket_id": "<<FILL: bucket_id>>",
+  "primary_capability_ref": "<<FILL: primary_capability_ref>>",
+  "intrinsic_badge": "<<ONE OF: EASY | MEDIUM | HARD>>",
+  "badge_reason": "<<FILL: badge_reason>>",
+  "entry_assumptions": [
+    "<<FILL: entry_assumptions[]>>"
+  ],
+  "inferential_jump": "<<FILL: inferential_jump>>",
+  "teaching_path": [
+    {
+      "id": "<<FILL: microtopic id>>-S1",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 1.action>>",
+      "why_valid": "<<FILL: teaching_path step 1.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 1.output>>"
+    },
+    {
+      "id": "<<FILL: microtopic id>>-S2",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 2.action>>",
+      "why_valid": "<<FILL: teaching_path step 2.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 2.output>>"
+    },
+    {
+      "id": "<<FILL: microtopic id>>-S3",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 3.action>>",
+      "why_valid": "<<FILL: teaching_path step 3.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 3.output>>"
+    },
+    {
+      "id": "<<FILL: microtopic id>>-S4",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 4.action>>",
+      "why_valid": "<<FILL: teaching_path step 4.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 4.output>>"
+    },
+    {
+      "id": "<<FILL: microtopic id>>-S5",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 5.action>>",
+      "why_valid": "<<FILL: teaching_path step 5.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 5.output>>"
+    },
+    {
+      "id": "<<FILL: microtopic id>>-S6",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 6.action>>",
+      "why_valid": "<<FILL: teaching_path step 6.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 6.output>>"
+    },
+    {
+      "id": "<<FILL: microtopic id>>-S7",
+      "role": "<<ONE OF: DECLARE | TRANSFORM | VERIFY>>",
+      "action": "<<FILL: teaching_path step 7.action>>",
+      "why_valid": "<<FILL: teaching_path step 7.why_valid>>",
+      "inputs": [],
+      "output": "<<FILL: teaching_path step 7.output>>"
+    }
+  ],
+  "relation_refs": [],
+  "representation_refs": [],
+  "question_family_refs": [],
+  "misconceptions": [
+    {
+      "wrong_idea": "<<FILL: misconceptions[].wrong_idea>>",
+      "diagnostic_prompt": "<<FILL: misconceptions[].diagnostic_prompt>>",
+      "repair": "<<FILL: misconceptions[].repair>>"
+    }
+  ],
+  "exit_task": {
+    "prompt": "<<FILL: exit_task.prompt>>",
+    "source_ref": "<<FILL: exit_task.source_ref>>",
+    "answer": {
+      "kind": "<<ONE OF: EXACT | MODEL_RESPONSE | RUBRIC>>",
+      "summary": "<<FILL: exit_task.answer.summary>>",
+      "reasoning": [
+        "<<FILL: exit_task.answer.reasoning[]>>"
+      ],
+      "check": "<<FILL: exit_task.answer.check>>",
+      "acceptable_alternatives": [],
+      "subpart_answers": [],
+      "verification_status": "<<ONE OF: NOT_RUN | CHECKED_BY_AUTHOR>>"
+    },
+    "oracle": {
+      "held_by": "<<FILL: exit_task.oracle: keep exactly one key of verification | held_by | no_numeric_claim>>"
+    }
+  },
+  "research_contribution": "<<FILL: research_contribution>>",
+  "prerequisite_refs": [],
+  "lineage": [],
+  "construction_units": [
+    {
+      "id": "CU-<<FILL: microtopic id without MIC->>-1",
+      "step_refs": [
+        "<<FILL: microtopic id>>-S1",
+        "<<FILL: microtopic id>>-S2",
+        "<<FILL: microtopic id>>-S3"
+      ],
+      "decision": "<<FILL: UNIT_HEADER unit 1: the decision this unit teaches the learner to make>>",
+      "crux_question_refs": [
+        "<<FILL: QUESTION_BRIDGE unit 1: id of a D1 or D2 question whose crux this unit builds>>"
+      ],
+      "crux_step_ref": "<<FILL: microtopic id>>-S3",
+      "relation_refs": [
+        "<<FILL: EQUATIONS unit 1: REL-... id>>"
+      ],
+      "worked_anchor_ref": "<<FILL: WORKED_EXAMPLE unit 1: id of a library question worked as the example>>",
+      "representation_ref": "<<FILL: STAGED_VISUAL unit 1: REP-... id of the representation>>",
+      "reveal_stage_refs": [],
+      "misconception_indexes": [
+        0
+      ],
+      "independent_checks": [
+        {
+          "statement": "<<FILL: QUICK_CHECK unit 1 CHECK>>",
+          "role": "CHECK"
+        },
+        {
+          "statement": "<<FILL: QUICK_CHECK unit 1 APPLY>>",
+          "role": "APPLY"
+        },
+        {
+          "statement": "<<FILL: QUICK_CHECK unit 1 CONNECT>>",
+          "role": "CONNECT"
+        }
+      ]
+    },
+    {
+      "id": "CU-<<FILL: microtopic id without MIC->>-2",
+      "step_refs": [
+        "<<FILL: microtopic id>>-S4",
+        "<<FILL: microtopic id>>-S5",
+        "<<FILL: microtopic id>>-S6",
+        "<<FILL: microtopic id>>-S7"
+      ],
+      "decision": "<<FILL: UNIT_HEADER unit 2: the decision this unit teaches the learner to make>>",
+      "crux_question_refs": [
+        "<<FILL: QUESTION_BRIDGE unit 2: id of a D3 or D4 question whose crux this unit builds>>"
+      ],
+      "crux_step_ref": "<<FILL: microtopic id>>-S7",
+      "relation_refs": [
+        "<<FILL: EQUATIONS unit 2: REL-... id>>"
+      ],
+      "worked_anchor_ref": "<<FILL: WORKED_EXAMPLE unit 2: id of a library question worked as the example>>",
+      "representation_ref": "<<FILL: STAGED_VISUAL unit 2: REP-... id of the representation>>",
+      "reveal_stage_refs": [],
+      "misconception_indexes": [
+        0
+      ],
+      "independent_checks": [
+        {
+          "statement": "<<FILL: QUICK_CHECK unit 2 CHECK>>",
+          "role": "CHECK"
+        },
+        {
+          "statement": "<<FILL: QUICK_CHECK unit 2 APPLY>>",
+          "role": "APPLY"
+        },
+        {
+          "statement": "<<FILL: QUICK_CHECK unit 2 CONNECT>>",
+          "role": "CONNECT"
+        }
+      ]
+    }
+  ]
+}
