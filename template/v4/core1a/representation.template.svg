@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 220" role="img" aria-labelledby="FIG-title FIG-desc">
+<title id="FIG-title">What the figure shows</title><desc id="FIG-desc">Stage by stage, in words.</desc>
+<g data-g9-stage-id="STAGE-ID-V0" font-family="system-ui,sans-serif" font-size="14" fill="currentColor" stroke="currentColor"><text x="16" y="24" stroke="none" font-weight="700">Stage 1 title</text><!-- the complete picture for this stage: repeat the base drawing, then add what this stage reveals --><text x="16" y="200" stroke="none">what stage 1 adds</text></g>
+<g data-g9-stage-id="STAGE-ID-V1" font-family="system-ui,sans-serif" font-size="14" fill="currentColor" stroke="currentColor"><text x="16" y="24" stroke="none" font-weight="700">Stage 2 title</text><!-- the complete picture for this stage: repeat the base drawing, then add what this stage reveals --><text x="16" y="200" stroke="none">what stage 2 adds</text></g>
+<g data-g9-stage-id="STAGE-ID-V2" font-family="system-ui,sans-serif" font-size="14" fill="currentColor" stroke="currentColor"><text x="16" y="24" stroke="none" font-weight="700">Stage 3 title</text><!-- the complete picture for this stage: repeat the base drawing, then add what this stage reveals --><text x="16" y="200" stroke="none">what stage 3 adds</text></g>
+</svg>

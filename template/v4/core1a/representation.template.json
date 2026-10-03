@@ -1,0 +1,72 @@
+{
+  "$template": {
+    "kind": "REPRESENTATION",
+    "destination": "representations[] of the subject package, with its SVG beside the others",
+    "rules": [
+      "STAGED_VISUAL: 3 stages, 4 for a unit that builds the crux of a D3 or D4 question. The page shows ONE stage at a time, so every data-g9-stage-id group must be a complete picture (repeat the base drawing in each group). viewBox at most 440 wide, every label at least 14 units, a <title> and <desc> named by aria-labelledby.",
+      "Each reveal_stages id is the data-g9-stage-id of one group in the SVG, in the same order.",
+      "correspondence binds an element the figure must contain to a symbol a bound relation declares.",
+      "Draw each unit its own picture; do not reuse one figure on many units."
+    ]
+  },
+  "id": "<<FILL: id>>",
+  "version": "0.1.0",
+  "status": "CANDIDATE",
+  "source_refs": [],
+  "evidence_refs": [],
+  "extensions": {},
+  "kind": "<<FILL: one of the representation_kinds the subject contract declares (<Subject>/adapter/CoreContracts.json)>>",
+  "purpose": "<<FILL: purpose>>",
+  "required_elements": [
+    "<<FILL: required_elements[]>>"
+  ],
+  "relation_refs": [],
+  "read_order": [
+    "<<FILL: read_order[]>>"
+  ],
+  "instance_constraints": [
+    "<<FILL: instance_constraints[]>>"
+  ],
+  "accessibility": [
+    "<<FILL: accessibility[]>>"
+  ],
+  "misleading_alternatives": [],
+  "rendered_asset_refs": [
+    "<<FILL: <Subject>/assets/representations/<REP id>.svg>>"
+  ],
+  "scene_instances": [],
+  "correspondence": [
+    {
+      "element": "<<FILL: one of required_elements>>",
+      "symbol": "<<FILL: a symbol one of relation_refs declares>>",
+      "in_words": "<<FILL: what that part of the picture is, in words>>"
+    }
+  ],
+  "interactive_resource_refs": [],
+  "reveal_stages": [
+    {
+      "id": "<<FILL: stage id>>-V0",
+      "label": "<<FILL: stage 0 label>>",
+      "purpose": "<<FILL: what stage 0 shows>>",
+      "visible_elements": [
+        "<<FILL: one of required_elements>>"
+      ]
+    },
+    {
+      "id": "<<FILL: stage id>>-V1",
+      "label": "<<FILL: stage 1 label>>",
+      "purpose": "<<FILL: what stage 1 shows>>",
+      "visible_elements": [
+        "<<FILL: one of required_elements>>"
+      ]
+    },
+    {
+      "id": "<<FILL: stage id>>-V2",
+      "label": "<<FILL: stage 2 label>>",
+      "purpose": "<<FILL: what stage 2 shows>>",
+      "visible_elements": [
+        "<<FILL: one of required_elements>>"
+      ]
+    }
+  ]
+}

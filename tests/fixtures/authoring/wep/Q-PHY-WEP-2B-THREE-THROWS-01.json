@@ -1,0 +1,228 @@
+{
+  "id": "Q-PHY-WEP-2B-THREE-THROWS-01",
+  "version": "1.0.0",
+  "status": "CANDIDATE",
+  "source_refs": [
+    "SRC-AUTHOR-WEP"
+  ],
+  "evidence_refs": [],
+  "extensions": {
+    "grade9v3:analysis": {
+      "expected_time_seconds": 180,
+      "common_wrong_route": "Treating the three throws as three different motions: choosing (B) because the upward ball climbs higher first, or (A) because the downward ball starts towards the ground; or using sqrt(2 g h) = 20 m/s and forgetting the kinetic energy the ball already had (D)."
+    },
+    "problem_specification": {
+      "requested_outputs": [
+        {
+          "id": "v",
+          "quantity_kind": "speed"
+        }
+      ],
+      "visible_facts": [
+        {
+          "symbol": "m",
+          "value": 0.5,
+          "unit": "kg",
+          "visible_in": "STEM"
+        },
+        {
+          "symbol": "u",
+          "value": 10,
+          "unit": "m/s",
+          "visible_in": "STEM"
+        },
+        {
+          "symbol": "h",
+          "value": 20,
+          "unit": "m",
+          "visible_in": "STEM"
+        },
+        {
+          "symbol": "g",
+          "value": 10,
+          "unit": "m/s^2",
+          "visible_in": "STEM"
+        }
+      ],
+      "declared_assumptions": [
+        "air resistance negligible",
+        "only gravity does work after release"
+      ],
+      "permitted_constants": []
+    },
+    "answer_contract": {
+      "answer_type": "OPTION",
+      "requested_outputs": [
+        "v"
+      ],
+      "equivalence_policy": "OPTION_MATCH"
+    }
+  },
+  "origin": "AUTHORED",
+  "origin_ref": "SRC-AUTHOR-WEP",
+  "original_identifier": "AUTHOR-WEP-2B-THREE-THROWS-01",
+  "stem": "From the edge of a flat roof 20 m above the ground, three identical 0.5 kg balls are thrown with the same speed, 10 m/s: one straight up, one straight down and one horizontally. Which statement about the speeds with which they reach the ground is correct?",
+  "subparts": [],
+  "options": [
+    "(A) The ball thrown straight down lands fastest.",
+    "(B) The ball thrown straight up lands fastest, because it falls from a greater height.",
+    "(C) All three land with the same speed, about 22 m/s.",
+    "(D) All three land with the same speed, 20 m/s."
+  ],
+  "conditions": [
+    "Air resistance is negligible.",
+    "Take g = 10 m/s^2.",
+    "Each ball leaves the roof edge at 10 m/s, 20 m above the ground."
+  ],
+  "figure_refs": [
+    "REP-WEP-THREE-THROWS-SAFE"
+  ],
+  "answer": {
+    "kind": "EXACT",
+    "summary": "(C) All three land with the same speed, sqrt(500) m/s, about 22.4 m/s.",
+    "reasoning": [
+      "Only gravity does work after release, so K + U_g is the same at the roof and at the ground for each ball.",
+      "Neither kinetic nor potential energy depends on the direction of the throw.",
+      "0.5 m u^2 + m g h = 0.5 m v^2, so v^2 = u^2 + 2 g h = 100 + 400 = 500 and v = 22.4 m/s for every ball."
+    ],
+    "reasoning_route": [
+      {
+        "id": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-1",
+        "kind": "DECIDE",
+        "action": "Choose energy conservation instead of tracking each throw's motion.",
+        "why_valid": "After release only gravity does work and air resistance is negligible, so K + U_g is conserved.",
+        "inputs": [],
+        "output": "Use K_i + U_i = K_f + U_f for each ball."
+      },
+      {
+        "id": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-2",
+        "kind": "REPRESENT",
+        "action": "Write the two states: at the roof edge and just before the ground.",
+        "why_valid": "Energy conservation compares two states of the same ball.",
+        "inputs": [],
+        "output": "Roof: K = 0.5 m u^2, U_g = m g h. Ground: K = 0.5 m v^2, U_g = 0."
+      },
+      {
+        "id": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-3",
+        "kind": "TRANSFORM",
+        "action": "Equate the energies and solve for v; notice that the throw direction never appears.",
+        "why_valid": "Kinetic energy depends on speed only and U_g on height only.",
+        "inputs": [],
+        "output": "v^2 = u^2 + 2 g h, the same for all three balls; the mass cancels."
+      },
+      {
+        "id": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-4",
+        "kind": "TRANSFORM",
+        "action": "Substitute u = 10 m/s, g = 10 m/s^2, h = 20 m.",
+        "why_valid": "The conditions give the values.",
+        "inputs": [],
+        "output": "v^2 = 100 + 400 = 500, v = 22.4 m/s: option (C)."
+      },
+      {
+        "id": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-5",
+        "kind": "VERIFY",
+        "action": "Check the upward throw by kinematics.",
+        "why_valid": "An independent route must give the same speed.",
+        "inputs": [],
+        "output": "It rises u^2/2g = 5 m, then falls 25 m: v = sqrt(2 x 10 x 25) = sqrt(500) m/s. Same."
+      }
+    ],
+    "crux_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-3",
+    "check": "The upward ball rises 5 m and falls 25 m: sqrt(2 x 10 x 25) = sqrt(500) m/s, matching v^2 = u^2 + 2 g h. Option (D), 20 m/s, is sqrt(2 g h) and leaves out the launch kinetic energy.",
+    "acceptable_alternatives": [],
+    "subpart_answers": [],
+    "verification_status": "CHECKED_BY_AUTHOR"
+  },
+  "primary_capability_ref": "CAP-WEP-MECH-ENERGY-CONDITION",
+  "secondary_capability_refs": [
+    "CAP-WEP-GRADE9-QUANT"
+  ],
+  "family_ref": "FAM-PHY-WEP-PRACTICE",
+  "adaptation": null,
+  "exposure": [
+    {
+      "core": "CORE2B",
+      "role": "NEW_TRANSFER",
+      "artifact_ref": null
+    }
+  ],
+  "scaffolds": [
+    {
+      "text": "Write each ball's energy at the roof and just before the ground. What changes between the two states, and what does not?",
+      "prompt": "Picture the two states, not the paths.",
+      "support_kind": "REPRESENT",
+      "reveals": "CONCEPT",
+      "learner_stage": "REPRESENTATION",
+      "supports_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-2"
+    },
+    {
+      "text": "Write each ball's energy at the roof edge and just before the ground, as two lists: kinetic and potential.",
+      "prompt": "Two states, two lists.",
+      "support_kind": "CONNECT",
+      "reveals": "CONCEPT",
+      "learner_stage": "KEY_CONCEPT",
+      "supports_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-2"
+    },
+    {
+      "text": "Kinetic energy depends on speed, not on direction. Does the direction of the throw appear anywhere in your two energy statements?",
+      "prompt": "Where would the direction enter?",
+      "support_kind": "CONNECT",
+      "reveals": "METHOD",
+      "learner_stage": "CRUX",
+      "supports_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-3"
+    },
+    {
+      "text": "Equate the energies: 0.5 m u^2 + m g h = 0.5 m v^2. Solve for v and see what happens to m.",
+      "prompt": "Solve for v.",
+      "support_kind": "EXECUTE",
+      "reveals": "METHOD",
+      "learner_stage": "FORMAL_MODEL",
+      "supports_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-3"
+    },
+    {
+      "text": "You should reach v^2 = 500 (m/s)^2 for every ball. Compare it with the options before choosing.",
+      "prompt": "Compare with 20 m/s.",
+      "support_kind": "EXECUTE",
+      "reveals": "METHOD",
+      "learner_stage": "CHECKPOINT",
+      "supports_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-4"
+    }
+  ],
+  "learner_question_type": "single_correct_mcq",
+  "difficulty": {
+    "band": "D4",
+    "score": 8,
+    "components": {
+      "concept_model_selection": 2,
+      "representation_translation": 1,
+      "reasoning_chain_length": 2,
+      "algebra_computational_load": 1,
+      "trap_exception_sensitivity": 2
+    },
+    "basis": "The learner must reject per-direction kinematics for energy conservation, see that direction never enters K or U_g, and resist two attractive traps (the higher climb and the downward head start) plus the missing-launch-energy distractor."
+  },
+  "representation_roles": {
+    "initial_ref": null,
+    "safe_ref": "REP-WEP-THREE-THROWS-SAFE",
+    "bound_ref": null,
+    "stage_refs": []
+  },
+  "transfer": {
+    "dimension": "model_choice",
+    "statement": "Earlier items apply K + U conservation to one motion. Here three motions in different directions must be recognised as one energy statement, and per-direction kinematics, which a Grade 9 learner cannot finish for the horizontal throw, has to be rejected.",
+    "builds_on": [
+      "Q-PHY-WEP-2A-COV-05",
+      "MIC-PHY-WEP-MECH-ENERGY-CONDITION"
+    ],
+    "protected_move_ref": "Q-PHY-WEP-2B-THREE-THROWS-01-MOVE-1",
+    "invariant": "K + U_g is conserved when only gravity does work, as in the earlier mechanical-energy item.",
+    "novelty": {
+      "checked_against": [
+        "Q-PHY-WEP-2A-COV-05",
+        "Q-PHY-WEP-2A-DERIV-01",
+        "CU-PHY-WEP-MECH-ENERGY-CONDITION-1"
+      ],
+      "why_new": "None of these asks the learner to see that the launch direction drops out; each has one motion and one direction."
+    }
+  }
+}

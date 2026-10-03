@@ -1,0 +1,322 @@
+{
+  "$template": {
+    "kind": "PYQ_QUESTION",
+    "band": "D2",
+    "band_label": "Connected reasoning",
+    "score_range": [
+      3,
+      5
+    ],
+    "blueprint": "BP-CORE2-SOURCE-QUESTION@1.5.0",
+    "destination": "an exam-bank file under <Subject>/library/exam-bank/",
+    "rules": [
+      "Replace every <<FILL: ...>> and <<ONE OF: ...>>; delete this $template block; run `authoring_templates.py check FILE`.",
+      "status stays CANDIDATE: promotion is a review with a receipt, never an edit.",
+      "answer.verification_status is NOT_RUN or CHECKED_BY_AUTHOR: an author cannot check their own key independently.",
+      "The band is D2: score 3 to 5, the sum of the five components. A different score means a different template.",
+      "scaffolds: 3 rungs for D2, in the order the learner meets them.",
+      "adaptation is null unless origin is ADAPTED; then it names the parent and what changed.",
+      "options are the choices without letters: the page writes (A), (B), ... itself.",
+      "Write math as the existing records do; the page shows it as written (typesetting is a separate duty).",
+      "extensions.problem_specification and answer_contract let SELF_CONTAINMENT run. Add extensions.computation_model only when the problem fits an implemented model (LINEAR_KINEMATICS, PROJECTILE_MAX_HEIGHT, PROJECTILE_NO_DRAG, PROJECTILE_TIME_OF_FLIGHT); then ANSWER_CORRECTNESS recomputes your answer.",
+      "An EXPECTED component you leave empty needs a written reason in extensions['grade9v3:component_waivers'] {COMPONENT_ID: reason}.",
+      "Never write HTML: the renderer makes the page from this record.",
+      "Then run: authoring_templates.py check FILE --into <package> --product <manifest>. It runs the library intake and the renderer on the record in place and reports only what the record adds."
+    ],
+    "components": [
+      {
+        "component": "IDENTITY",
+        "level": "REQUIRED",
+        "fields": [
+          "id",
+          "original_identifier",
+          "extensions.grade9v3:source_custody"
+        ],
+        "hint": "Identity comes from the question's custody. An owner-supplied question shows 'Owner-supplied question' and carries no exam, year or paper."
+      },
+      {
+        "component": "SOURCE_PDF",
+        "level": "OPTIONAL",
+        "fields": [
+          "extensions.grade9v3:source_custody.paper_url",
+          "extensions.grade9v3:source_custody.authority_class",
+          "extensions.grade9v3:source_custody.source_status"
+        ],
+        "hint": "Nothing to write: the page links the paper when the question's source custody is an official exam organizer archive, verified (source_status PYQ_VERIFIED_PARENT), and paper_url is an https link to a PDF. An owner-supplied question has no source file and shows no link; never put a link in the record to make the icon appear."
+      },
+      {
+        "component": "DIFFICULTY_WHY",
+        "level": "EXPECTED",
+        "fields": [
+          "extensions.grade9v3:analysis.difficulty",
+          "extensions.grade9v3:analysis.expected_time_seconds"
+        ],
+        "hint": "Fill extensions['grade9v3:analysis'].difficulty: five components (each 0 to 2), score (their sum), band for that score, basis (one sentence); and expected_time_seconds, your estimate of the time a prepared learner needs. They are your estimates and are shown as estimates."
+      },
+      {
+        "component": "STEM",
+        "level": "REQUIRED",
+        "fields": [
+          "stem"
+        ]
+      },
+      {
+        "component": "CONDITIONS",
+        "level": "EXPECTED",
+        "fields": [
+          "conditions"
+        ],
+        "hint": "List each stated condition (a constraint or assumption the question gives) as one entry of conditions[]. Never list a method or a result there."
+      },
+      {
+        "component": "TRAP",
+        "level": "EXPECTED",
+        "fields": [
+          "extensions.grade9v3:analysis.common_wrong_route"
+        ],
+        "hint": "One sentence naming the wrong route learners take and why it tempts. It must not give the answer or the right route."
+      },
+      {
+        "component": "ATTEMPT",
+        "level": "REQUIRED",
+        "fields": [
+          "response",
+          "options"
+        ]
+      },
+      {
+        "component": "REPRESENTATION",
+        "level": "EXPECTED",
+        "fields": [
+          "figure_refs"
+        ],
+        "floor": 1,
+        "hint": "Add a representation to the package with an authored SVG (role=img, aria-labelledby or aria-label, <title> and <desc>) drawn only from the question's own data (labels at least 14 units high in a viewBox no wider than 440 units, so they read on a tablet), then name its id in figure_refs. Every question gets one; a classification or a pure-number question can show the quantities as a labelled diagram. If a question truly has nothing to draw, say so in extensions['grade9v3:component_waivers'] with the reason."
+      },
+      {
+        "component": "HINT_LADDER",
+        "level": "REQUIRED",
+        "fields": [
+          "scaffolds",
+          "hints",
+          "hint_ladder"
+        ],
+        "items_for_band": 3,
+        "floor": 2,
+        "hint": "Write scaffolds[], one rung per job, in the order a learner meets them: a D1 or D2 question needs 3 (REPRESENTATION, KEY_CONCEPT, CRUX), a D3 or D4 question 5 (then FORMAL_MODEL, which gives the relation to use, and CHECKPOINT, which gives an intermediate result to compare against). Each has text (the hint), prompt (a question that makes the learner do the step), support_kind (REPRESENT, CONNECT or EXECUTE), reveals (CONCEPT or METHOD; ANSWER is held back until the solution), learner_stage and supports_move_ref (the id of the move it prepares). A rung must teach something specific to this question and must not repeat another rung or state the answer. Delete the rungs the question's band does not need."
+      },
+      {
+        "component": "CONCEPT_NAV",
+        "level": "OPTIONAL",
+        "fields": [
+          "primary_capability_ref",
+          "secondary_capability_refs"
+        ]
+      },
+      {
+        "component": "SOLUTION",
+        "level": "REQUIRED",
+        "fields": [
+          "answer"
+        ]
+      },
+      {
+        "component": "SOLUTION_STEPS",
+        "level": "REQUIRED",
+        "fields": [
+          "answer.reasoning_route",
+          "answer.crux_move_ref"
+        ],
+        "items_for_band": 3,
+        "floor": 2,
+        "hint": "Write answer.reasoning_route[]: 3 moves for a D1 or D2 question, 4 for a D3 or D4. Each move has id, kind (DECIDE, REPRESENT, CONNECT, TRANSFORM or VERIFY), action (what is done), why_valid (the physical or logical reason this step is allowed; not 'this follows from the model'), inputs and output. Set crux_move_ref to the id of the move a learner is most likely to miss. Delete the move the band does not need."
+      },
+      {
+        "component": "ANSWER",
+        "level": "REQUIRED",
+        "fields": [
+          "answer.summary"
+        ]
+      },
+      {
+        "component": "CHECK",
+        "level": "EXPECTED",
+        "fields": [
+          "answer.check"
+        ],
+        "hint": "One sentence that tests the result independently: a limiting case, a unit check or a special value."
+      }
+    ]
+  },
+  "id": "<<FILL: id>>",
+  "version": "1.0.0",
+  "status": "CANDIDATE",
+  "source_refs": [],
+  "evidence_refs": [],
+  "extensions": {
+    "grade9v3:analysis": {
+      "topic": "<<FILL: analysis.topic>>",
+      "concept_bucket": "<<FILL: analysis.concept_bucket>>",
+      "exam_source_badge": "<<FILL: analysis.exam_source_badge>>",
+      "original_question_type": "<<FILL: analysis.original_question_type>>",
+      "learner_question_type": "<<FILL: analysis.learner_question_type>>",
+      "difficulty": {
+        "band": "D2",
+        "score": "<<FILL: integer 3 to 5: the sum of the five components below>>",
+        "components": {
+          "concept_model_selection": "<<FILL: integer 0 to 2>>",
+          "representation_translation": "<<FILL: integer 0 to 2>>",
+          "reasoning_chain_length": "<<FILL: integer 0 to 2>>",
+          "algebra_computational_load": "<<FILL: integer 0 to 2>>",
+          "trap_exception_sensitivity": "<<FILL: integer 0 to 2>>"
+        },
+        "basis": "<<FILL: why this band: what the learner must choose, translate, chain, compute and avoid>>"
+      },
+      "expected_time_seconds": "<<FILL: DIFFICULTY_WHY extensions.grade9v3:analysis.expected_time_seconds>>",
+      "common_wrong_route": "<<FILL: TRAP extensions.grade9v3:analysis.common_wrong_route>>",
+      "stable_crux_move": "<<FILL: analysis.stable_crux_move>>",
+      "transfer_profile": {
+        "core2b_candidate": "<<ONE OF: True | False>>",
+        "dimension": "<<ONE OF: model_choice | representation_translation | novelty | reasoning_steps>>",
+        "classification": "<<ONE OF: REAL_TRANSFER_CANDIDATE | SAME_FAMILY_VARIATION>>"
+      }
+    },
+    "problem_specification": {
+      "requested_outputs": [
+        {
+          "id": "<<FILL: output id, e.g. v>>",
+          "quantity_kind": "<<FILL: what it is: speed, force, energy, ...>>"
+        }
+      ],
+      "visible_facts": [
+        {
+          "symbol": "<<FILL: visible fact symbol>>",
+          "value": "<<FILL: visible fact value>>",
+          "unit": "<<FILL: visible fact unit>>",
+          "expression": "<<FILL: visible fact expression>>",
+          "visible_in": "<<ONE OF: STEM | FIGURE>>"
+        }
+      ],
+      "declared_assumptions": [
+        "<<FILL: an assumption the stem or the conditions state>>"
+      ],
+      "permitted_constants": []
+    },
+    "answer_contract": {
+      "answer_type": "<<ONE OF: NUMERIC | QUANTITY | SYMBOLIC_EXPRESSION | EQUATION | VECTOR | OPTION | TRUE_FALSE | PROPOSITION | COMPOUND>>",
+      "requested_outputs": [
+        "<<FILL: output id>>"
+      ],
+      "equivalence_policy": "<<ONE OF: EXACT | NUMERIC_UNIT_EQUIVALENCE | SYMBOLIC_EQUIVALENCE | OPTION_MATCH>>"
+    },
+    "grade9v3:provenance_class": "<<ONE OF: PYQ_VERIFIED | PYQ_ADAPTED | SOURCE_UNVERIFIED>>",
+    "grade9v3:source_custody": {
+      "authority_class": "<<ONE OF: OFFICIAL_EXAM_ORGANIZER_ARCHIVE>>",
+      "exam": "<<FILL: source_custody.exam>>",
+      "year": "<<FILL: source_custody.year (integer)>>",
+      "paper": "<<FILL: source_custody.paper>>",
+      "section": "<<ONE OF: Physics | Chemistry | Mathematics>>",
+      "question_number": "<<FILL: source_custody.question_number>>",
+      "paper_url": "<<FILL: source_custody.paper_url>>",
+      "archive_url": "<<FILL: source_custody.archive_url>>",
+      "answer_key_url": "<<FILL: source_custody.answer_key_url>>",
+      "answer_authority": "<<ONE OF: OFFICIAL_PAPER_EMBEDDED_KEY | INDEPENDENTLY_CHECKED_AGAINST_OFFICIAL_QUESTION | OFFICIAL_FINAL_KEY | OFFICIAL_NTA_FINAL_ANSWER_KEY>>",
+      "last_checked": "<<FILL: source_custody.last_checked>>",
+      "source_status": "<<ONE OF: PYQ_VERIFIED_PARENT>>",
+      "parent_ref": "<<FILL: source_custody.parent_ref>>",
+      "wording_custody": "<<ONE OF: FAITHFUL_NON_VERBATIM_RESTATEMENT>>"
+    }
+  },
+  "origin": "<<ONE OF: ORIGINAL | ADAPTED>>",
+  "origin_ref": "<<FILL: origin_ref>>",
+  "original_identifier": "<<FILL: original_identifier>>",
+  "stem": "<<FILL: stem>>",
+  "subparts": [],
+  "options": [],
+  "conditions": [],
+  "figure_refs": [],
+  "answer": {
+    "kind": "<<ONE OF: EXACT | MODEL_RESPONSE | RUBRIC>>",
+    "summary": "<<FILL: answer.summary>>",
+    "reasoning": [
+      "<<FILL: answer.reasoning[]>>"
+    ],
+    "check": "<<FILL: CHECK answer.check>>",
+    "acceptable_alternatives": [],
+    "subpart_answers": [],
+    "verification_status": "<<ONE OF: NOT_RUN | CHECKED_BY_AUTHOR | INDEPENDENTLY_CHECKED (only with an official key in source_custody)>>",
+    "reasoning_route": [
+      {
+        "id": "<<FILL: question id>>-MOVE-1",
+        "kind": "DECIDE",
+        "action": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].action>>",
+        "why_valid": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].why_valid>>",
+        "inputs": [],
+        "output": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].output>>"
+      },
+      {
+        "id": "<<FILL: question id>>-MOVE-2",
+        "kind": "REPRESENT",
+        "action": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].action>>",
+        "why_valid": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].why_valid>>",
+        "inputs": [],
+        "output": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].output>>"
+      },
+      {
+        "id": "<<FILL: question id>>-MOVE-3",
+        "kind": "TRANSFORM",
+        "action": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].action>>",
+        "why_valid": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].why_valid>>",
+        "inputs": [],
+        "output": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].output>>"
+      },
+      {
+        "id": "<<FILL: question id>>-MOVE-4",
+        "kind": "VERIFY",
+        "action": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].action>>",
+        "why_valid": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].why_valid>>",
+        "inputs": [],
+        "output": "<<FILL: SOLUTION_STEPS answer.reasoning_route[].output>>"
+      }
+    ],
+    "crux_move_ref": "<<FILL: SOLUTION_STEPS answer.crux_move_ref>>"
+  },
+  "primary_capability_ref": "<<FILL: primary_capability_ref>>",
+  "secondary_capability_refs": [],
+  "family_ref": "<<FILL: family_ref>>",
+  "adaptation": {
+    "parent_ref": "<<FILL: adaptation.parent_ref>>",
+    "changed_fields": [
+      "<<FILL: adaptation.changed_fields[]>>"
+    ],
+    "reason": "<<FILL: adaptation.reason>>"
+  },
+  "exposure": [],
+  "scaffolds": [
+    {
+      "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
+      "prompt": "<<FILL: HINT_LADDER scaffolds[].prompt>>",
+      "support_kind": "REPRESENT",
+      "reveals": "CONCEPT",
+      "learner_stage": "REPRESENTATION",
+      "supports_move_ref": "<<FILL: question id>>-MOVE-2"
+    },
+    {
+      "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
+      "prompt": "<<FILL: HINT_LADDER scaffolds[].prompt>>",
+      "support_kind": "CONNECT",
+      "reveals": "CONCEPT",
+      "learner_stage": "KEY_CONCEPT",
+      "supports_move_ref": "<<FILL: question id>>-MOVE-1"
+    },
+    {
+      "text": "<<FILL: HINT_LADDER scaffolds[].text>>",
+      "prompt": "<<FILL: HINT_LADDER scaffolds[].prompt>>",
+      "support_kind": "CONNECT",
+      "reveals": "METHOD",
+      "learner_stage": "CRUX",
+      "supports_move_ref": "<<FILL: question id>>-MOVE-3"
+    }
+  ],
+  "learner_question_type": "<<ONE OF: single_correct_mcq | assertion_reason_mcq | integer_answer | matrix_match_mcq | numerical_value | non_negative_integer | multi_correct_mcq | constructed_response | derivation | experimental_design>>"
+}

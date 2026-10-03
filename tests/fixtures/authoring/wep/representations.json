@@ -1,0 +1,251 @@
+[
+  {
+    "id": "REP-WEP-K-FROM-WORK",
+    "version": "0.1.0",
+    "status": "CANDIDATE",
+    "source_refs": [
+      "SRC-AUTHOR-WEP"
+    ],
+    "evidence_refs": [],
+    "extensions": {},
+    "kind": "FREE_BODY_DIAGRAM",
+    "purpose": "Show kinetic energy arriving from the net force's work, one link of the chain per stage, so K = 0.5 m v^2 is reached rather than quoted.",
+    "required_elements": [
+      "trolley at the start and end of the interval",
+      "net force along the displacement",
+      "no-time kinematic relation",
+      "change of kinetic energy"
+    ],
+    "relation_refs": [
+      "REL-WORK-CONSTANT-FORCE",
+      "REL-WORK-ENERGY-THEOREM",
+      "REL-KINETIC-ENERGY"
+    ],
+    "read_order": [
+      "trolley at the start and end of the interval",
+      "net force along the displacement",
+      "no-time kinematic relation",
+      "change of kinetic energy"
+    ],
+    "instance_constraints": [
+      "The net force is constant and along the displacement.",
+      "The trolley's mass does not change."
+    ],
+    "accessibility": [
+      "Every force and quantity is labelled in text.",
+      "Results are written as text, not carried by colour alone."
+    ],
+    "misleading_alternatives": [
+      "Starting from K = 0.5 m v^2 as a definition with no link to work.",
+      "Using v = u + a t, which brings in time the derivation does not need."
+    ],
+    "rendered_asset_refs": [
+      "tests/fixtures/authoring/wep/REP-WEP-K-FROM-WORK.svg"
+    ],
+    "scene_instances": [],
+    "correspondence": [
+      {
+        "element": "net force along the displacement",
+        "symbol": "F_parallel",
+        "in_words": "The net force's component along the path, constant over the interval."
+      },
+      {
+        "element": "trolley at the start and end of the interval",
+        "symbol": "s",
+        "in_words": "The displacement between the two positions."
+      },
+      {
+        "element": "change of kinetic energy",
+        "symbol": "Delta K",
+        "in_words": "Final kinetic energy minus initial kinetic energy, equal to the net work."
+      }
+    ],
+    "interactive_resource_refs": [],
+    "reveal_stages": [
+      {
+        "id": "VIS-WEP-K-V0",
+        "label": "One interval",
+        "purpose": "Fix one body, one interval, speeds u and v, displacement s.",
+        "visible_elements": [
+          "trolley at the start and end of the interval"
+        ]
+      },
+      {
+        "id": "VIS-WEP-K-V1",
+        "label": "Net work",
+        "purpose": "Write the net force's work with Newton's second law.",
+        "visible_elements": [
+          "net force along the displacement"
+        ]
+      },
+      {
+        "id": "VIS-WEP-K-V2",
+        "label": "a s",
+        "purpose": "Replace a s from the no-time relation.",
+        "visible_elements": [
+          "no-time kinematic relation"
+        ]
+      },
+      {
+        "id": "VIS-WEP-K-V3",
+        "label": "Delta K",
+        "purpose": "Read the result as the change of kinetic energy.",
+        "visible_elements": [
+          "change of kinetic energy"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "REP-WEP-UG-SLOW-LIFT",
+    "version": "0.1.0",
+    "status": "CANDIDATE",
+    "source_refs": [
+      "SRC-AUTHOR-WEP"
+    ],
+    "evidence_refs": [],
+    "extensions": {},
+    "kind": "FREE_BODY_DIAGRAM",
+    "purpose": "Show why lifting slowly stores m g h as gravitational potential energy: the applied force balances the weight, the speed does not change, so the lifting work is stored.",
+    "required_elements": [
+      "box lifted slowly through height h",
+      "applied force balancing the weight",
+      "zero net work of the slow lift",
+      "increase of gravitational potential energy"
+    ],
+    "relation_refs": [
+      "REL-WEIGHT-NEAR-EARTH",
+      "REL-WORK-CONSTANT-FORCE",
+      "REL-GRAVITATIONAL-POTENTIAL-NEAR-EARTH"
+    ],
+    "read_order": [
+      "box lifted slowly through height h",
+      "applied force balancing the weight",
+      "zero net work of the slow lift",
+      "increase of gravitational potential energy"
+    ],
+    "instance_constraints": [
+      "The lift is slow: speed unchanged, acceleration zero.",
+      "Near Earth's surface: g constant over h."
+    ],
+    "accessibility": [
+      "Every force and quantity is labelled in text.",
+      "Results are written as text, not carried by colour alone."
+    ],
+    "misleading_alternatives": [
+      "Saying the lifting work 'disappears' because the box ends at rest.",
+      "Taking the applied force larger than m g throughout a slow lift."
+    ],
+    "rendered_asset_refs": [
+      "tests/fixtures/authoring/wep/REP-WEP-UG-SLOW-LIFT.svg"
+    ],
+    "scene_instances": [],
+    "correspondence": [
+      {
+        "element": "applied force balancing the weight",
+        "symbol": "F_weight",
+        "in_words": "The weight m g, which the applied force balances in a slow lift."
+      },
+      {
+        "element": "box lifted slowly through height h",
+        "symbol": "Delta h",
+        "in_words": "Final height minus initial height."
+      },
+      {
+        "element": "increase of gravitational potential energy",
+        "symbol": "Delta U_g",
+        "in_words": "The stored increase, m g h."
+      }
+    ],
+    "interactive_resource_refs": [],
+    "reveal_stages": [
+      {
+        "id": "VIS-WEP-UG-V0",
+        "label": "Slow lift",
+        "purpose": "Show the start and end heights and the lift h.",
+        "visible_elements": [
+          "box lifted slowly through height h"
+        ]
+      },
+      {
+        "id": "VIS-WEP-UG-V1",
+        "label": "Forces",
+        "purpose": "Applied force equal to the weight because a = 0.",
+        "visible_elements": [
+          "applied force balancing the weight"
+        ]
+      },
+      {
+        "id": "VIS-WEP-UG-V2",
+        "label": "Net work zero",
+        "purpose": "Gravity's work and the applied work cancel; Delta K = 0.",
+        "visible_elements": [
+          "zero net work of the slow lift"
+        ]
+      },
+      {
+        "id": "VIS-WEP-UG-V3",
+        "label": "Stored",
+        "purpose": "The applied work appears as Delta U_g = m g h.",
+        "visible_elements": [
+          "increase of gravitational potential energy"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "REP-WEP-THREE-THROWS-SAFE",
+    "version": "0.1.0",
+    "status": "CANDIDATE",
+    "source_refs": [
+      "SRC-AUTHOR-WEP"
+    ],
+    "evidence_refs": [],
+    "extensions": {},
+    "kind": "VECTOR",
+    "purpose": "Show the three launch directions at one speed from one height, before the learner commits, without paths or landing speeds.",
+    "required_elements": [
+      "roof edge 20 m above the ground",
+      "three launch velocities of 10 m/s"
+    ],
+    "relation_refs": [],
+    "read_order": [
+      "roof edge 20 m above the ground",
+      "three launch velocities of 10 m/s"
+    ],
+    "instance_constraints": [
+      "Same launch speed and height for all three balls."
+    ],
+    "accessibility": [
+      "Every arrow is labelled with its direction and speed in text."
+    ],
+    "misleading_alternatives": [
+      "Drawing three different trajectories, which invites comparing paths instead of energies."
+    ],
+    "rendered_asset_refs": [
+      "tests/fixtures/authoring/wep/REP-WEP-THREE-THROWS-SAFE.svg"
+    ],
+    "scene_instances": [],
+    "correspondence": [],
+    "interactive_resource_refs": [],
+    "reveal_stages": [
+      {
+        "id": "VIS-WEP-THROWS-V0",
+        "label": "Launch",
+        "purpose": "The three launch velocities.",
+        "visible_elements": [
+          "roof edge 20 m above the ground",
+          "three launch velocities of 10 m/s"
+        ]
+      },
+      {
+        "id": "VIS-WEP-THROWS-V1",
+        "label": "Question",
+        "purpose": "What is asked, without the answer.",
+        "visible_elements": [
+          "three launch velocities of 10 m/s"
+        ]
+      }
+    ]
+  }
+]

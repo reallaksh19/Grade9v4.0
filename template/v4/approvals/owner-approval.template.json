@@ -1,0 +1,17 @@
+{
+  "approval_id": "<<FILL: APPROVAL-<KIND>-<subject or matrix id>-<YYYYMMDD>>>",
+  "kind": "<<ONE OF: RUNGS | ATLAS>>",
+  "subject_ref": "<<FILL: repository path of what is approved (the matrix file, or the subject)>>",
+  "subject_digest": "<<FILL: the digest printed at the top of the packet>>",
+  "decision": "PENDING",
+  "items": [
+    {
+      "ref": "<<FILL: rung or bucket id>>",
+      "decision": "<<ONE OF: APPROVED | REVISE>>",
+      "note": ""
+    }
+  ],
+  "band_targets": {},
+  "approved_by": "Owner",
+  "approved_at": null
+}
