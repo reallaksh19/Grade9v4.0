@@ -1,4 +1,18 @@
-# Grade9V3.5 Repository Provenance
+# Grade9v4.0 Repository Provenance
+
+```text
+SOURCE_REPOSITORY: reallaksh19/Grade9v3.5
+SOURCE_COMMIT: 266749fb1740dd5641f10ed09f8dc37a96c5d979
+SOURCE_COMMIT_MESSAGE: feat(ci,continuum): independent automation engine, topic manifest continuum, and zero-missing-index CI gate
+SOURCE_BASIS: Grade9v3.5 main @ 9059848c2d2ea757b765a01c66841c8906cd7875, plus draft PR #2 (reallaksh19/Grade9v3.5#2), its single commit 266749f on top of that main
+ESTABLISHED_AT: 2026-10-03T09:48:20Z
+```
+
+This repository (`reallaksh19/Grade9v4.0`) was seeded from `reallaksh19/Grade9v3.5@266749fb` with its complete git history (2,729 commits) and commit topology. That commit is Grade9v3.5 `main` at `9059848c` with draft PR #2 on top; PR #2 was a single commit on that `main`, so it is included without a merge commit. The Owner chose to seed with PR #2.
+
+All v4.0 upgrade work lives in this repository. Grade9v3.5 stays as the reference.
+
+## Grade9V3.5 Repository Provenance
 
 ```text
 SOURCE_REPOSITORY: reallaksh19/Grade9V3
