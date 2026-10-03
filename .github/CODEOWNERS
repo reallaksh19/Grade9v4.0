@@ -1,0 +1,19 @@
+# Gate surfaces of Grade9v4.0. A change to any of these needs the Owner's review
+# (with the ruleset's "require review from Code Owners"). See docs/v4/GOVERNANCE.md.
+
+# Assurance: verifiers, policies, waivers, baseline, evidence contracts
+/Shared/assurance/        @reallaksh19
+# Blueprint registry, its schema, the standalone ledger
+/Shared/web/              @reallaksh19
+# Scope and release policy
+/Shared/policy/           @reallaksh19
+# Engineering gates
+/Shared/gates/            @reallaksh19
+/Physics/gates/           @reallaksh19
+/Mathematics/gates/       @reallaksh19
+# Research-first intake workflow (duties and defaults)
+/Shared/workflows/        @reallaksh19
+# Tests and their baselines are gates too
+/tests/                   @reallaksh19
+# CI and this file
+/.github/                 @reallaksh19
